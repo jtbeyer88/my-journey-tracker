@@ -90,8 +90,11 @@
 
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-top: 10px; }
         .cal-header { font-weight: bold; color: #888; font-size: 0.8rem; padding-bottom: 5px; }
-        .cal-day { background-color: #2c2c2c; padding: 12px 5px; border-radius: 4px; font-size: 0.9rem; min-height: 40px; }
+        .cal-day { background-color: #2c2c2c; padding: 12px 5px; border-radius: 4px; font-size: 0.9rem; min-height: 40px; cursor: pointer; transition: background 0.2s; }
+        .cal-day:hover { background-color: #444; }
         .cal-day.today { border: 2px solid #d97706; font-weight: bold; }
+        .cal-day.selected { background-color: #d97706; color: white; font-weight: bold; }
+        #active-date-banner { background-color: #2c2c2c; padding: 8px; text-align: center; border-radius: 4px; margin-bottom: 15px; font-size: 0.9rem; color: #d97706; font-weight: bold; }
     </style>
 
     <!-- Firebase SDK Scripts -->
@@ -112,19 +115,36 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Expose database functions globally to the app
         window.dbRef = ref;
         window.dbSet = set;
         window.dbGet = get;
         window.dbChild = child;
         window.database = db;
 
-        // Auto-fetch data on load
-        window.addEventListener('DOMContentLoaded', async () => {
+        // Active Date Tracker
+        window.currentSelectedDate = new Date().toISOString().split('T')[0];
+
+        window.loadDateData = async function(dateStr) {
+            window.currentSelectedDate = dateStr;
+            document.getElementById('active-date-banner').innerText = `Viewing Date: ${dateStr}`;
+            
+            // Highlight selected calendar day
+            document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('selected'));
+            event.target.classList.add('selected');
+
+            // Reset UI fields before loading
+            globalDailyScore = 0;
+            document.getElementById('master-score').innerHTML = `0 <span>pts</span>`;
+            document.getElementById('daily-weight').value = '';
+            document.getElementById('daily-steps').value = '';
+            document.getElementById('journal-entry').value = '';
+            document.getElementById('freeform-notes').value = '';
+            document.getElementById('dash-vitals').innerText = 'No';
+            document.getElementById('dash-journal').innerText = '0';
+
             if (window.database) {
                 try {
-                    const todayKey = new Date().toISOString().split('T')[0];
-                    const snapshot = await window.dbGet(window.dbChild(window.dbRef(window.database), 'days/' + todayKey));
+                    const snapshot = await window.dbGet(window.dbChild(window.dbRef(window.database), 'days/' + dateStr));
                     if (snapshot.exists()) {
                         const data = snapshot.val();
                         if (data.score !== undefined) {
@@ -136,7 +156,35 @@
                         if (data.journal) document.getElementById('journal-entry').value = data.journal;
                         if (data.notes) document.getElementById('freeform-notes').value = data.notes;
                         
-                        // Update summaries
+                        if (data.weight) document.getElementById('dash-vitals').innerText = 'Yes';
+                        if (data.journal) {
+                            const sentences = data.journal.match(/[^.!?]+[.!?]+/g) || [];
+                            document.getElementById('dash-journal').innerText = sentences.length;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error loading date data:", e);
+                }
+            }
+        };
+
+        // Auto-fetch today on load
+        window.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('active-date-banner').innerText = `Viewing Date: ${window.currentSelectedDate}`;
+            if (window.database) {
+                try {
+                    const snapshot = await window.dbGet(window.dbChild(window.dbRef(window.database), 'days/' + window.currentSelectedDate));
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        if (data.score !== undefined) {
+                            globalDailyScore = data.score;
+                            document.getElementById('master-score').innerHTML = `${globalDailyScore} <span>pts</span>`;
+                        }
+                        if (data.weight) document.getElementById('daily-weight').value = data.weight;
+                        if (data.steps) document.getElementById('daily-steps').value = data.steps;
+                        if (data.journal) document.getElementById('journal-entry').value = data.journal;
+                        if (data.notes) document.getElementById('freeform-notes').value = data.notes;
+                        
                         if (data.weight) document.getElementById('dash-vitals').innerText = 'Yes';
                         if (data.journal) {
                             const sentences = data.journal.match(/[^.!?]+[.!?]+/g) || [];
@@ -151,6 +199,8 @@
     </script>
 </head>
 <body>
+
+    <div id="active-date-banner">Viewing Date: Today</div>
 
     <div class="nav-tabs">
         <button id="nav-tab1" class="active" onclick="switchTab('tab1')">Spirit</button>
@@ -350,16 +400,17 @@
         </div>
 
         <div class="card">
-            <h2>Calendar & Schedule (General / Work)</h2>
-            <p style="color: #aaa; font-size: 0.9rem; margin-top: 0;">Google Calendar API sync placeholder</p>
+            <h2>September 2026 Archive</h2>
+            <p style="color: #aaa; font-size: 0.9rem; margin-top: 0;">Tap any date to load or edit that day's log:</p>
             <div class="calendar-grid">
                 <div class="cal-header">Sun</div><div class="cal-header">Mon</div><div class="cal-header">Tue</div><div class="cal-header">Wed</div><div class="cal-header">Thu</div><div class="cal-header">Fri</div><div class="cal-header">Sat</div>
                 <div class="cal-day" style="opacity: 0.3;">28</div><div class="cal-day" style="opacity: 0.3;">29</div><div class="cal-day" style="opacity: 0.3;">30</div><div class="cal-day" style="opacity: 0.3;">31</div>
-                <div class="cal-day">1</div><div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div><div class="cal-day">6</div><div class="cal-day">7</div>
-                <div class="cal-day">8</div><div class="cal-day">9</div><div class="cal-day">10</div><div class="cal-day">11</div><div class="cal-day">12</div><div class="cal-day">13</div><div class="cal-day">14</div>
-                <div class="cal-day">15</div><div class="cal-day today">16</div><div class="cal-day">17</div><div class="cal-day">18</div><div class="cal-day">19</div><div class="cal-day">20</div><div class="cal-day">21</div>
-                <div class="cal-day">22</div><div class="cal-day">23</div><div class="cal-day">24</div><div class="cal-day">25</div><div class="cal-day">26</div><div class="cal-day">27</div><div class="cal-day">28</div>
-                <div class="cal-day">29</div><div class="cal-day">30</div><div class="cal-day" style="opacity: 0.3;">1</div>
+                <div class="cal-day" onclick="loadDateData('2026-09-01')">1</div><div class="cal-day" onclick="loadDateData('2026-09-02')">2</div><div class="cal-day" onclick="loadDateData('2026-09-03')">3</div>
+                <div class="cal-day" onclick="loadDateData('2026-09-04')">4</div><div class="cal-day" onclick="loadDateData('2026-09-05')">5</div><div class="cal-day" onclick="loadDateData('2026-09-06')">6</div><div class="cal-day" onclick="loadDateData('2026-09-07')">7</div>
+                <div class="cal-day" onclick="loadDateData('2026-09-08')">8</div><div class="cal-day" onclick="loadDateData('2026-09-09')">9</div><div class="cal-day" onclick="loadDateData('2026-09-10')">10</div><div class="cal-day" onclick="loadDateData('2026-09-11')">11</div><div class="cal-day" onclick="loadDateData('2026-09-12')">12</div><div class="cal-day" onclick="loadDateData('2026-09-13')">13</div><div class="cal-day" onclick="loadDateData('2026-09-14')">14</div>
+                <div class="cal-day" onclick="loadDateData('2026-09-15')">15</div><div class="cal-day today selected" onclick="loadDateData('2026-09-16')">16</div><div class="cal-day" onclick="loadDateData('2026-09-17')">17</div><div class="cal-day" onclick="loadDateData('2026-09-18')">18</div><div class="cal-day" onclick="loadDateData('2026-09-19')">19</div><div class="cal-day" onclick="loadDateData('2026-09-20')">20</div><div class="cal-day" onclick="loadDateData('2026-09-21')">21</div>
+                <div class="cal-day" onclick="loadDateData('2026-09-22')">22</div><div class="cal-day" onclick="loadDateData('2026-09-23')">23</div><div class="cal-day" onclick="loadDateData('2026-09-24')">24</div><div class="cal-day" onclick="loadDateData('2026-09-25')">25</div><div class="cal-day" onclick="loadDateData('2026-09-26')">26</div><div class="cal-day" onclick="loadDateData('2026-09-27')">27</div><div class="cal-day" onclick="loadDateData('2026-09-28')">28</div>
+                <div class="cal-day" onclick="loadDateData('2026-09-29')">29</div><div class="cal-day" onclick="loadDateData('2026-09-30')">30</div><div class="cal-day" style="opacity: 0.3;">1</div>
             </div>
         </div>
     </div>
@@ -475,14 +526,14 @@
             alert('Notes Saved locally!');
         }
 
-        // --- CLOUD SYNC FUNCTION ---
+        // --- CLOUD SYNC FUNCTION (Saves to active selected date) ---
         async function syncDayToCloud() {
             if (!window.database) {
                 alert("Database not connected yet.");
                 return;
             }
             try {
-                const todayKey = new Date().toISOString().split('T')[0];
+                const targetKey = window.currentSelectedDate || new Date().toISOString().split('T')[0];
                 const payload = {
                     score: globalDailyScore,
                     weight: document.getElementById('daily-weight').value,
@@ -492,8 +543,8 @@
                     timestamp: Date.now()
                 };
 
-                await window.dbSet(window.dbRef(window.database, 'days/' + todayKey), payload);
-                alert("Success! Your day's data has been synced to the cloud database.");
+                await window.dbSet(window.dbRef(window.database, 'days/' + targetKey), payload);
+                alert(`Success! Data for ${targetKey} has been synced to the cloud.`);
             } catch (error) {
                 console.error(error);
                 alert("Sync failed. Check console for details.");
