@@ -73,14 +73,6 @@
     <!-- TAB 1: SPIRIT -->
     <div id="tab1" class="tab-content active">
         <div class="card">
-            <h2>Sleep Log (Goal: 7.5 hrs)</h2>
-            <div class="compact-row">
-                <div><label>Bedtime:</label><input type="time" id="bedtime" class="narrow-input"></div>
-                <div><label>Wake Time:</label><input type="time" id="waketime" class="narrow-input"></div>
-            </div>
-            <button class="action-btn btn-red" onclick="saveSleep()">SAVE SLEEP</button>
-        </div>
-        <div class="card">
             <h2>Daily Scripture & Journal</h2>
             <input type="text" id="scripture-ref" placeholder="Reference (e.g., Romans 12:1-2)">
             <button class="action-btn btn-red" onclick="alert('API Placeholder')">FETCH SCRIPTURE</button>
@@ -102,8 +94,15 @@
     <div id="tab2" class="tab-content">
         <div class="card">
             <h2>Today's Vitals</h2>
-            <label>Bodyweight (lbs):</label><br>
-            <input type="number" id="daily-weight" placeholder="185" class="narrow-input">
+            <div class="compact-row">
+                <div><label>Weight (lbs):</label><input type="number" id="daily-weight" placeholder="185" class="narrow-input"></div>
+                <div><label>Steps:</label><input type="number" id="daily-steps" placeholder="10000" class="narrow-input"></div>
+            </div>
+            <div class="compact-row">
+                <div><label>Bedtime:</label><input type="time" id="bedtime" class="narrow-input"></div>
+                <div><label>Wake Time:</label><input type="time" id="waketime" class="narrow-input"></div>
+            </div>
+            <button class="action-btn btn-blue" onclick="alert('Vitals Saved!')">SAVE VITALS</button>
         </div>
         <div style="margin-bottom: 20px;">
             <button class="action-btn btn-blue">PULL</button>
@@ -341,7 +340,6 @@
                 return;
             }
 
-            // Append to the specific meal list
             let ul = document.getElementById(`list-${mealTime}`);
             let li = document.createElement('li');
             li.innerHTML = `<span><strong>${foodName}</strong></span> <span>${addedCals} Cals</span>`;
@@ -354,7 +352,6 @@
 
         window.onload = updateUI;
         
-        function saveSleep() { alert('Sleep Saved!'); }
         function saveMeditation() { alert('Meditation Saved!'); }
         function logFast() { alert('Fast Logged!'); }
     </script>
