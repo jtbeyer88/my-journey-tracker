@@ -7,9 +7,28 @@
     <style>
         body { background-color: #121212; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; padding-bottom: 80px; }
         
+        /* Navigation Tabs Updated for Color */
         .nav-tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
-        .nav-tabs button { flex: 1; background-color: #333; color: white; padding: 12px 5px; font-size: 0.9rem; border-radius: 8px; border: none; min-width: 60px; cursor: pointer; }
-        .nav-tabs button.active { border: 2px solid #ffffff; font-weight: bold; }
+        .nav-tabs button { 
+            flex: 1; 
+            color: white; 
+            padding: 12px 5px; 
+            font-size: 0.9rem; 
+            border-radius: 8px; 
+            border: 2px solid transparent; 
+            min-width: 60px; 
+            cursor: pointer; 
+            opacity: 0.5; /* Dims inactive tabs */
+            transition: opacity 0.2s;
+        }
+        .nav-tabs button.active { opacity: 1; border: 2px solid #ffffff; font-weight: bold; }
+        
+        /* Tab Specific Colors */
+        #nav-tab1 { background-color: #8B0000; } /* Spirit Red */
+        #nav-tab2 { background-color: #1e3a8a; } /* Exercise Blue */
+        #nav-tab3 { background-color: #b8860b; } /* Planner Yellow */
+        #nav-tab4 { background-color: #1b5e20; } /* Food Green */
+        #nav-tab5 { background-color: #4a148c; } /* Totals Purple */
         
         .card { border: 1px solid #ffffff; border-radius: 8px; padding: 20px; margin-bottom: 20px; background-color: #1e1e1e; }
         h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
@@ -21,7 +40,6 @@
         textarea { resize: vertical; min-height: 100px; }
         
         .narrow-input { width: 140px !important; }
-        
         .aligned-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; margin-bottom: 15px; }
         .input-group { display: flex; align-items: center; }
         .input-group label { width: 110px; font-size: 0.95rem; }
@@ -63,11 +81,9 @@
         
         .intake-list p { margin: 5px 0; font-size: 1rem; display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .dv-percent { color: #aaaaaa; font-size: 0.85rem; margin-left: 10px; }
-        
         .meal-list { list-style: none; padding: 0; margin: 0 0 15px 0; }
         .meal-list li { padding: 5px 0; font-size: 0.95rem; display: flex; justify-content: space-between; }
         
-        /* Dashboard Score */
         .score-display { text-align: center; margin: 20px 0; }
         .score-display h1 { font-size: 4rem; margin: 0; color: #ffffff; }
         .score-display span { font-size: 1.2rem; color: #aaaaaa; font-weight: normal; }
@@ -108,27 +124,14 @@
         <div class="card">
             <h2>Today's Vitals</h2>
             <div class="aligned-grid">
-                <div class="input-group">
-                    <label>Weight (lbs):</label>
-                    <input type="number" id="daily-weight" placeholder="185" class="narrow-input">
-                </div>
-                <div class="input-group">
-                    <label>Steps:</label>
-                    <input type="number" id="daily-steps" placeholder="10000" class="narrow-input">
-                </div>
-                <div class="input-group">
-                    <label>Bedtime:</label>
-                    <input type="time" id="bedtime" class="narrow-input">
-                </div>
-                <div class="input-group">
-                    <label>Wake Time:</label>
-                    <input type="time" id="waketime" class="narrow-input">
-                </div>
+                <div class="input-group"><label>Weight (lbs):</label><input type="number" id="daily-weight" placeholder="185" class="narrow-input"></div>
+                <div class="input-group"><label>Steps:</label><input type="number" id="daily-steps" placeholder="10000" class="narrow-input"></div>
+                <div class="input-group"><label>Bedtime:</label><input type="time" id="bedtime" class="narrow-input"></div>
+                <div class="input-group"><label>Wake Time:</label><input type="time" id="waketime" class="narrow-input"></div>
             </div>
-            <button class="action-btn btn-blue" onclick="alert('Vitals Saved!')">SAVE VITALS</button>
+            <button class="action-btn btn-blue" onclick="saveVitals()">SAVE VITALS</button>
         </div>
         
-        <!-- PULL, PUSH, WALK buttons now perfectly aligned inside a card -->
         <div class="card">
             <h2>Routines</h2>
             <button class="action-btn btn-blue">PULL</button>
@@ -139,24 +142,9 @@
         <div class="card" id="chest-press-container">
             <h2>Chest Press</h2>
             <div id="sets-container">
-                <div class="set-row">
-                    <span>Set 1</span>
-                    <input type="number" placeholder="Wt">
-                    <input type="number" placeholder="Reps">
-                    <button class="btn-done" onclick="finishSet(this)">Done</button>
-                </div>
-                <div class="set-row">
-                    <span>Set 2</span>
-                    <input type="number" placeholder="Wt">
-                    <input type="number" placeholder="Reps">
-                    <button class="btn-done" onclick="finishSet(this)">Done</button>
-                </div>
-                <div class="set-row">
-                    <span>Set 3</span>
-                    <input type="number" placeholder="Wt">
-                    <input type="number" placeholder="Reps">
-                    <button class="btn-done" onclick="finishSet(this)">Done</button>
-                </div>
+                <div class="set-row"><span>Set 1</span><input type="number" placeholder="Wt"><input type="number" placeholder="Reps"><button class="btn-done" onclick="finishSet(this)">Done</button></div>
+                <div class="set-row"><span>Set 2</span><input type="number" placeholder="Wt"><input type="number" placeholder="Reps"><button class="btn-done" onclick="finishSet(this)">Done</button></div>
+                <div class="set-row"><span>Set 3</span><input type="number" placeholder="Wt"><input type="number" placeholder="Reps"><button class="btn-done" onclick="finishSet(this)">Done</button></div>
             </div>
             <button class="action-btn btn-blue" onclick="addSet()">+ Add Set</button>
         </div>
@@ -164,27 +152,33 @@
 
     <!-- TAB 3: PLANNER -->
     <div id="tab3" class="tab-content">
-        <div class="card">
+        <div class="card" id="top-five-container">
             <h2>Today's Top Five</h2>
-            <div class="top-five-row"><input type="checkbox"><input type="text" placeholder="1. "></div>
-            <div class="top-five-row"><input type="checkbox"><input type="text" placeholder="2. "></div>
-            <div class="top-five-row"><input type="checkbox"><input type="text" placeholder="3. "></div>
-            <div class="top-five-row"><input type="checkbox"><input type="text" placeholder="4. "></div>
-            <div class="top-five-row"><input type="checkbox"><input type="text" placeholder="5. "></div>
+            <div class="top-five-row"><input type="checkbox" class="t5-check"><input type="text" placeholder="1. "></div>
+            <div class="top-five-row"><input type="checkbox" class="t5-check"><input type="text" placeholder="2. "></div>
+            <div class="top-five-row"><input type="checkbox" class="t5-check"><input type="text" placeholder="3. "></div>
+            <div class="top-five-row"><input type="checkbox" class="t5-check"><input type="text" placeholder="4. "></div>
+            <div class="top-five-row"><input type="checkbox" class="t5-check"><input type="text" placeholder="5. "></div>
         </div>
         <div class="card">
             <h2>Appointments & Notes</h2>
-            <textarea placeholder="Jot down meetings, times, and general notes here..."></textarea>
+            <textarea id="plan-notes" placeholder="Jot down meetings, times, and general notes here..."></textarea>
         </div>
         <div class="card">
             <h2>Must Contact Today</h2>
-            <textarea placeholder="Calls, emails, or texts to send today..." style="min-height: 80px;"></textarea>
+            <textarea id="plan-contact" placeholder="Calls, emails, or texts to send today..." style="min-height: 80px;"></textarea>
         </div>
         <div class="card">
             <h2>Coming Up</h2>
-            <textarea placeholder="Next week, next month, future plans..." style="min-height: 80px;"></textarea>
+            <textarea id="plan-future" placeholder="Next week, next month, future plans..." style="min-height: 80px;"></textarea>
         </div>
-        <button class="action-btn btn-yellow" onclick="alert('Planner saved!')">SAVE PLANNER</button>
+        
+        <div class="card">
+            <h2>Good News / Bonus (+5 pts)</h2>
+            <input type="text" id="plan-bonus" placeholder="Did you achieve something special today?">
+        </div>
+
+        <button class="action-btn btn-yellow" onclick="savePlanner()">SAVE PLANNER</button>
     </div>
 
     <!-- TAB 4: NUTRITION -->
@@ -231,14 +225,9 @@
 
         <div class="card">
             <h2>Today's Meals</h2>
-            <h3 class="meal-header">Morning</h3>
-            <ul id="list-morning" class="meal-list"></ul>
-            
-            <h3 class="meal-header">Lunch</h3>
-            <ul id="list-lunch" class="meal-list"></ul>
-            
-            <h3 class="meal-header">Dinner</h3>
-            <ul id="list-dinner" class="meal-list"></ul>
+            <h3 class="meal-header">Morning</h3><ul id="list-morning" class="meal-list"></ul>
+            <h3 class="meal-header">Lunch</h3><ul id="list-lunch" class="meal-list"></ul>
+            <h3 class="meal-header">Dinner</h3><ul id="list-dinner" class="meal-list"></ul>
         </div>
 
         <div class="card">
@@ -267,15 +256,20 @@
 
         <div class="card">
             <h2 style="border-bottom-color: #8B0000;">Spirit Summary (Red)</h2>
-            <p><strong>Sleep:</strong> Pending</p>
-            <p><strong>Journal Sentences:</strong> 0</p>
-            <p><strong>Fasting Logged:</strong> None</p>
+            <p><strong>Journal Sentences:</strong> <span id="dash-journal">0</span></p>
+            <p><strong>Fasting Logged:</strong> <span id="dash-fast">None</span></p>
         </div>
 
         <div class="card">
             <h2 style="border-bottom-color: #1e3a8a;">Exercise Summary (Blue)</h2>
-            <p><strong>Vitals Logged:</strong> No</p>
-            <p><strong>Exercise Sets Completed:</strong> 0</p>
+            <p><strong>Vitals Logged:</strong> <span id="dash-vitals">No</span></p>
+            <p><strong>Exercise Sets Completed:</strong> <span id="dash-sets">0</span></p>
+        </div>
+
+        <div class="card">
+            <h2 style="border-bottom-color: #b8860b;">Planner Summary (Yellow)</h2>
+            <p><strong>Top Five Completed:</strong> <span id="dash-top5">0</span> / 5</p>
+            <p><strong>Good News Bonus:</strong> <span id="dash-bonus">No</span></p>
         </div>
 
         <div class="card">
@@ -288,6 +282,14 @@
     <div id="rest-timer-bar">Rest: <span id="timer-display">40</span>s</div>
 
     <script>
+        // --- GLOBAL SCORE TRACKER ---
+        let globalDailyScore = 0;
+        function addPoints(points) {
+            globalDailyScore += points;
+            document.getElementById('master-score').innerHTML = `${globalDailyScore} <span>pts</span>`;
+        }
+
+        // --- NAVIGATION ---
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
@@ -295,16 +297,14 @@
             document.getElementById('nav-' + tabId).classList.add('active');
         }
 
+        // --- EXERCISE & TIMER ---
         function playBeep() {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!AudioContext) return;
             const ctx = new AudioContext();
             const osc = ctx.createOscillator();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(800, ctx.currentTime);
-            osc.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.5);
+            osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime);
+            osc.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.5);
         }
 
         let timerInterval;
@@ -327,6 +327,7 @@
         }
 
         let totalSets = 3;
+        let setsCompleted = 0;
         function addSet() {
             totalSets++;
             const container = document.getElementById('sets-container');
@@ -338,10 +339,61 @@
 
         function finishSet(btn) {
             btn.classList.add('completed'); btn.innerText = 'Completed'; btn.disabled = true;
+            setsCompleted++;
+            document.getElementById('dash-sets').innerText = setsCompleted;
+            addPoints(1); 
             const all = document.querySelectorAll('#sets-container .set-row');
             if (all[all.length - 1] !== btn.parentElement) startTimer();
         }
 
+        function saveVitals() {
+            document.getElementById('dash-vitals').innerText = 'Yes';
+            addPoints(5);
+            alert('Vitals Saved! +5 points');
+        }
+
+        // --- SPIRIT SCORING ---
+        function saveMeditation() {
+            const text = document.getElementById('journal-entry').value;
+            const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+            const pts = sentences.length * 3;
+            document.getElementById('dash-journal').innerText = sentences.length;
+            addPoints(pts);
+            alert(`Saved! You wrote ${sentences.length} sentences. +${pts} points.`);
+        }
+
+        function logFast() {
+            const dur = parseFloat(document.getElementById('fast-duration')?.value || 0); 
+            document.getElementById('dash-fast').innerText = 'Logged';
+            addPoints(5);
+            alert('Fast Logged! +5 points.');
+        }
+
+        // --- PLANNER SCORING ---
+        function savePlanner() {
+            let pts = 0;
+            
+            const checkedBoxes = document.querySelectorAll('.t5-check:checked').length;
+            pts += (checkedBoxes * 2);
+            document.getElementById('dash-top5').innerText = checkedBoxes;
+
+            if (document.getElementById('plan-notes').value.trim() !== '') pts += 1;
+            if (document.getElementById('plan-contact').value.trim() !== '') pts += 1;
+            if (document.getElementById('plan-future').value.trim() !== '') pts += 1;
+
+            const bonusText = document.getElementById('plan-bonus').value.trim();
+            if (bonusText !== '') {
+                pts += 5;
+                document.getElementById('dash-bonus').innerText = 'Yes (+5)';
+            } else {
+                document.getElementById('dash-bonus').innerText = 'No';
+            }
+
+            addPoints(pts);
+            alert(`Planner Saved! You earned +${pts} points.`);
+        }
+
+        // --- NUTRITION ---
         const targets = { cals: 2000, fat: 65, satfat: 20, chol: 300, sod: 2300, carbs: 200, fiber: 28, sugar: 50, pro: 150 };
         const daily = { cals: 0, fat: 0, satfat: 0, chol: 0, sod: 0, carbs: 0, fiber: 0, sugar: 0, pro: 0 };
         const keys = Object.keys(daily);
@@ -354,7 +406,6 @@
                 const pct = Math.round((daily[k] / target) * 100);
                 document.getElementById(`p-${k}`).innerText = `(${pct}%)`;
                 
-                // Update Dashboard stats
                 if (k === 'cals') document.getElementById('dash-cal-status').innerText = `${pct}%`;
                 if (k === 'pro') document.getElementById('dash-pro-status').innerText = `${pct}%`;
             });
@@ -364,14 +415,10 @@
             const meal = document.getElementById('saved-meals').value;
             const setVals = (n, c, f, sf, ch, so, ca, fi, su, p) => {
                 document.getElementById('f-name').value = n;
-                document.getElementById('f-cals').value = c;
-                document.getElementById('f-fat').value = f;
-                document.getElementById('f-satfat').value = sf;
-                document.getElementById('f-chol').value = ch;
-                document.getElementById('f-sod').value = so;
-                document.getElementById('f-carbs').value = ca;
-                document.getElementById('f-fiber').value = fi;
-                document.getElementById('f-sugar').value = su;
+                document.getElementById('f-cals').value = c; document.getElementById('f-fat').value = f;
+                document.getElementById('f-satfat').value = sf; document.getElementById('f-chol').value = ch;
+                document.getElementById('f-sod').value = so; document.getElementById('f-carbs').value = ca;
+                document.getElementById('f-fiber').value = fi; document.getElementById('f-sugar').value = su;
                 document.getElementById('f-pro').value = p;
             };
 
@@ -394,8 +441,7 @@
             });
             
             if (!loggedAny) {
-                alert("Please enter at least one nutritional value.");
-                return;
+                alert("Please enter at least one nutritional value."); return;
             }
 
             let ul = document.getElementById(`list-${mealTime}`);
@@ -409,9 +455,6 @@
         }
 
         window.onload = updateUI;
-        
-        function saveMeditation() { alert('Meditation Saved!'); }
-        function logFast() { alert('Fast Logged!'); }
     </script>
 </body>
 </html>
