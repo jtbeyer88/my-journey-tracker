@@ -7,7 +7,6 @@
     <style>
         body { background-color: #121212; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; padding-bottom: 80px; }
         
-        /* Navigation Tabs Updated for Color */
         .nav-tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
         .nav-tabs button { 
             flex: 1; 
@@ -18,17 +17,17 @@
             border: 2px solid transparent; 
             min-width: 60px; 
             cursor: pointer; 
-            opacity: 0.5; /* Dims inactive tabs */
+            opacity: 0.5; 
             transition: opacity 0.2s;
         }
         .nav-tabs button.active { opacity: 1; border: 2px solid #ffffff; font-weight: bold; }
         
-        /* Tab Specific Colors */
         #nav-tab1 { background-color: #8B0000; } /* Spirit Red */
         #nav-tab2 { background-color: #1e3a8a; } /* Exercise Blue */
         #nav-tab3 { background-color: #b8860b; } /* Planner Yellow */
         #nav-tab4 { background-color: #1b5e20; } /* Food Green */
         #nav-tab5 { background-color: #4a148c; } /* Totals Purple */
+        #nav-tab6 { background-color: #d97706; } /* Notes Orange */
         
         .card { border: 1px solid #ffffff; border-radius: 8px; padding: 20px; margin-bottom: 20px; background-color: #1e1e1e; }
         h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
@@ -37,7 +36,7 @@
         input[type="text"], input[type="time"], input[type="number"], input[type="date"], select, textarea {
             background-color: #2c2c2c; color: #ffffff; border: 1px solid #ffffff; border-radius: 4px; padding: 10px; box-sizing: border-box; margin-top: 5px; margin-bottom: 10px; width: 100%;
         }
-        textarea { resize: vertical; min-height: 100px; }
+        textarea { resize: vertical; min-height: 120px; }
         
         .narrow-input { width: 140px !important; }
         .aligned-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; margin-bottom: 15px; }
@@ -62,6 +61,7 @@
         .btn-yellow { background-color: #b8860b; }
         .btn-green { background-color: #1b5e20; }
         .btn-purple { background-color: #4a148c; }
+        .btn-orange { background-color: #d97706; }
         
         .btn-done { background-color: #4CAF50; padding: 8px 15px; margin: 0; }
         .btn-done.completed { background-color: #555; text-decoration: line-through; }
@@ -87,6 +87,12 @@
         .score-display { text-align: center; margin: 20px 0; }
         .score-display h1 { font-size: 4rem; margin: 0; color: #ffffff; }
         .score-display span { font-size: 1.2rem; color: #aaaaaa; font-weight: normal; }
+
+        /* Calendar Grid Mockup */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-top: 10px; }
+        .cal-header { font-weight: bold; color: #888; font-size: 0.8rem; padding-bottom: 5px; }
+        .cal-day { background-color: #2c2c2c; padding: 12px 5px; border-radius: 4px; font-size: 0.9rem; min-height: 40px; }
+        .cal-day.today { border: 2px solid #d97706; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -97,6 +103,7 @@
         <button id="nav-tab3" onclick="switchTab('tab3')">Planner</button>
         <button id="nav-tab4" onclick="switchTab('tab4')">Food</button>
         <button id="nav-tab5" onclick="switchTab('tab5')">Totals</button>
+        <button id="nav-tab6" onclick="switchTab('tab6')">Notes</button>
     </div>
 
     <!-- TAB 1: SPIRIT -->
@@ -255,41 +262,98 @@
         </div>
 
         <div class="card">
-            <h2 style="border-bottom-color: #8B0000;">Spirit Summary (Red)</h2>
+            <h2 style="border-bottom-color: #8B0000;">Spirit Summary</h2>
             <p><strong>Journal Sentences:</strong> <span id="dash-journal">0</span></p>
             <p><strong>Fasting Logged:</strong> <span id="dash-fast">None</span></p>
         </div>
 
         <div class="card">
-            <h2 style="border-bottom-color: #1e3a8a;">Exercise Summary (Blue)</h2>
+            <h2 style="border-bottom-color: #1e3a8a;">Exercise Summary</h2>
             <p><strong>Vitals Logged:</strong> <span id="dash-vitals">No</span></p>
             <p><strong>Exercise Sets Completed:</strong> <span id="dash-sets">0</span></p>
         </div>
 
         <div class="card">
-            <h2 style="border-bottom-color: #b8860b;">Planner Summary (Yellow)</h2>
+            <h2 style="border-bottom-color: #b8860b;">Planner Summary</h2>
             <p><strong>Top Five Completed:</strong> <span id="dash-top5">0</span> / 5</p>
             <p><strong>Good News Bonus:</strong> <span id="dash-bonus">No</span></p>
         </div>
 
         <div class="card">
-            <h2 style="border-bottom-color: #1b5e20;">Nutrition Summary (Green)</h2>
+            <h2 style="border-bottom-color: #1b5e20;">Nutrition Summary</h2>
             <p><strong>Calorie Goal:</strong> <span id="dash-cal-status">0%</span></p>
             <p><strong>Protein Goal:</strong> <span id="dash-pro-status">0%</span></p>
+        </div>
+    </div>
+
+    <!-- TAB 6: NOTES & CALENDAR -->
+    <div id="tab6" class="tab-content">
+        <div class="card">
+            <h2>Free-Form Notes (S-Pen Friendly)</h2>
+            <textarea id="freeform-notes" placeholder="Jot down quick thoughts, write with your S-Pen, or type freely here..."></textarea>
+            <button class="action-btn btn-orange" onclick="alert('Notes Saved!')">SAVE NOTES</button>
+        </div>
+
+        <div class="card">
+            <h2>Calendar & Schedule (General / Work)</h2>
+            <p style="color: #aaa; font-size: 0.9rem; margin-top: 0;">Google Calendar API sync placeholder</p>
+            <div class="calendar-grid">
+                <div class="cal-header">Sun</div>
+                <div class="cal-header">Mon</div>
+                <div class="cal-header">Tue</div>
+                <div class="cal-header">Wed</div>
+                <div class="cal-header">Thu</div>
+                <div class="cal-header">Fri</div>
+                <div class="cal-header">Sat</div>
+                
+                <div class="cal-day" style="opacity: 0.3;">28</div>
+                <div class="cal-day" style="opacity: 0.3;">29</div>
+                <div class="cal-day" style="opacity: 0.3;">30</div>
+                <div class="cal-day" style="opacity: 0.3;">31</div>
+                <div class="cal-day">1</div>
+                <div class="cal-day">2</div>
+                <div class="cal-day">3</div>
+                <div class="cal-day">4</div>
+                <div class="cal-day">5</div>
+                <div class="cal-day">6</div>
+                <div class="cal-day">7</div>
+                <div class="cal-day">8</div>
+                <div class="cal-day">9</div>
+                <div class="cal-day">10</div>
+                <div class="cal-day">11</div>
+                <div class="cal-day">12</div>
+                <div class="cal-day">13</div>
+                <div class="cal-day">14</div>
+                <div class="cal-day">15</div>
+                <div class="cal-day today">16</div>
+                <div class="cal-day">17</div>
+                <div class="cal-day">18</div>
+                <div class="cal-day">19</div>
+                <div class="cal-day">20</div>
+                <div class="cal-day">21</div>
+                <div class="cal-day">22</div>
+                <div class="cal-day">23</div>
+                <div class="cal-day">24</div>
+                <div class="cal-day">25</div>
+                <div class="cal-day">26</div>
+                <div class="cal-day">27</div>
+                <div class="cal-day">28</div>
+                <div class="cal-day">29</div>
+                <div class="cal-day">30</div>
+                <div class="cal-day" style="opacity: 0.3;">1</div>
+            </div>
         </div>
     </div>
 
     <div id="rest-timer-bar">Rest: <span id="timer-display">40</span>s</div>
 
     <script>
-        // --- GLOBAL SCORE TRACKER ---
         let globalDailyScore = 0;
         function addPoints(points) {
             globalDailyScore += points;
             document.getElementById('master-score').innerHTML = `${globalDailyScore} <span>pts</span>`;
         }
 
-        // --- NAVIGATION ---
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
@@ -297,7 +361,6 @@
             document.getElementById('nav-' + tabId).classList.add('active');
         }
 
-        // --- EXERCISE & TIMER ---
         function playBeep() {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!AudioContext) return;
@@ -352,7 +415,6 @@
             alert('Vitals Saved! +5 points');
         }
 
-        // --- SPIRIT SCORING ---
         function saveMeditation() {
             const text = document.getElementById('journal-entry').value;
             const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
@@ -363,16 +425,13 @@
         }
 
         function logFast() {
-            const dur = parseFloat(document.getElementById('fast-duration')?.value || 0); 
             document.getElementById('dash-fast').innerText = 'Logged';
             addPoints(5);
             alert('Fast Logged! +5 points.');
         }
 
-        // --- PLANNER SCORING ---
         function savePlanner() {
             let pts = 0;
-            
             const checkedBoxes = document.querySelectorAll('.t5-check:checked').length;
             pts += (checkedBoxes * 2);
             document.getElementById('dash-top5').innerText = checkedBoxes;
@@ -393,7 +452,6 @@
             alert(`Planner Saved! You earned +${pts} points.`);
         }
 
-        // --- NUTRITION ---
         const targets = { cals: 2000, fat: 65, satfat: 20, chol: 300, sod: 2300, carbs: 200, fiber: 28, sugar: 50, pro: 150 };
         const daily = { cals: 0, fat: 0, satfat: 0, chol: 0, sod: 0, carbs: 0, fiber: 0, sugar: 0, pro: 0 };
         const keys = Object.keys(daily);
