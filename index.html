@@ -8,7 +8,7 @@
         body { background-color: #121212; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; padding-bottom: 80px; }
         
         .nav-tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
-        .nav-tabs button { flex: 1; background-color: #333; color: white; padding: 12px 5px; font-size: 0.9rem; border-radius: 8px; border: none; min-width: 70px; cursor: pointer; }
+        .nav-tabs button { flex: 1; background-color: #333; color: white; padding: 12px 5px; font-size: 0.9rem; border-radius: 8px; border: none; min-width: 60px; cursor: pointer; }
         .nav-tabs button.active { border: 2px solid #ffffff; font-weight: bold; }
         
         .card { border: 1px solid #ffffff; border-radius: 8px; padding: 20px; margin-bottom: 20px; background-color: #1e1e1e; }
@@ -22,11 +22,10 @@
         
         .narrow-input { width: 140px !important; }
         
-        /* New Aligned Grid for Vitals */
         .aligned-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; margin-bottom: 15px; }
         .input-group { display: flex; align-items: center; }
         .input-group label { width: 110px; font-size: 0.95rem; }
-        .input-group input { margin: 0; } /* Removes default top/bottom margin for perfect alignment */
+        .input-group input { margin: 0; } 
 
         .compact-row { display: flex; gap: 15px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
         .nutrition-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-bottom: 15px; }
@@ -44,6 +43,8 @@
         .btn-blue { background-color: #1e3a8a; }
         .btn-yellow { background-color: #b8860b; }
         .btn-green { background-color: #1b5e20; }
+        .btn-purple { background-color: #4a148c; }
+        
         .btn-done { background-color: #4CAF50; padding: 8px 15px; margin: 0; }
         .btn-done.completed { background-color: #555; text-decoration: line-through; }
         
@@ -65,6 +66,11 @@
         
         .meal-list { list-style: none; padding: 0; margin: 0 0 15px 0; }
         .meal-list li { padding: 5px 0; font-size: 0.95rem; display: flex; justify-content: space-between; }
+        
+        /* Dashboard Score */
+        .score-display { text-align: center; margin: 20px 0; }
+        .score-display h1 { font-size: 4rem; margin: 0; color: #ffffff; }
+        .score-display span { font-size: 1.2rem; color: #aaaaaa; font-weight: normal; }
     </style>
 </head>
 <body>
@@ -74,6 +80,7 @@
         <button id="nav-tab2" onclick="switchTab('tab2')">Exercise</button>
         <button id="nav-tab3" onclick="switchTab('tab3')">Planner</button>
         <button id="nav-tab4" onclick="switchTab('tab4')">Food</button>
+        <button id="nav-tab5" onclick="switchTab('tab5')">Totals</button>
     </div>
 
     <!-- TAB 1: SPIRIT -->
@@ -120,11 +127,15 @@
             </div>
             <button class="action-btn btn-blue" onclick="alert('Vitals Saved!')">SAVE VITALS</button>
         </div>
-        <div style="margin-bottom: 20px;">
+        
+        <!-- PULL, PUSH, WALK buttons now perfectly aligned inside a card -->
+        <div class="card">
+            <h2>Routines</h2>
             <button class="action-btn btn-blue">PULL</button>
             <button class="action-btn btn-blue">PUSH</button>
             <button class="action-btn btn-blue">WALK</button>
         </div>
+
         <div class="card" id="chest-press-container">
             <h2>Chest Press</h2>
             <div id="sets-container">
@@ -178,7 +189,6 @@
 
     <!-- TAB 4: NUTRITION -->
     <div id="tab4" class="tab-content">
-        
         <div class="card">
             <h2>Add Meal / Item</h2>
             <div class="compact-row">
@@ -244,6 +254,34 @@
                 <p><span>Sugars</span> <span><b id="d-sugar">0</b>g / <span id="dt-sugar">50</span>g <span class="dv-percent" id="p-sugar">(0%)</span></span></p>
                 <p><span>Protein</span> <span><b id="d-pro">0</b>g / <span id="dt-pro">150</span>g <span class="dv-percent" id="p-pro">(0%)</span></span></p>
             </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: TOTALS DASHBOARD -->
+    <div id="tab5" class="tab-content">
+        <div class="card score-display">
+            <h2>Total Daily Score</h2>
+            <h1 id="master-score">0 <span>pts</span></h1>
+            <button class="action-btn btn-purple" onclick="alert('In the future, this will sync your day to the database!')" style="margin-top: 15px;">FINISH DAY & SYNC</button>
+        </div>
+
+        <div class="card">
+            <h2 style="border-bottom-color: #8B0000;">Spirit Summary (Red)</h2>
+            <p><strong>Sleep:</strong> Pending</p>
+            <p><strong>Journal Sentences:</strong> 0</p>
+            <p><strong>Fasting Logged:</strong> None</p>
+        </div>
+
+        <div class="card">
+            <h2 style="border-bottom-color: #1e3a8a;">Exercise Summary (Blue)</h2>
+            <p><strong>Vitals Logged:</strong> No</p>
+            <p><strong>Exercise Sets Completed:</strong> 0</p>
+        </div>
+
+        <div class="card">
+            <h2 style="border-bottom-color: #1b5e20;">Nutrition Summary (Green)</h2>
+            <p><strong>Calorie Goal:</strong> <span id="dash-cal-status">0%</span></p>
+            <p><strong>Protein Goal:</strong> <span id="dash-pro-status">0%</span></p>
         </div>
     </div>
 
@@ -315,6 +353,10 @@
                 document.getElementById(`d-${k}`).innerText = daily[k];
                 const pct = Math.round((daily[k] / target) * 100);
                 document.getElementById(`p-${k}`).innerText = `(${pct}%)`;
+                
+                // Update Dashboard stats
+                if (k === 'cals') document.getElementById('dash-cal-status').innerText = `${pct}%`;
+                if (k === 'pro') document.getElementById('dash-pro-status').innerText = `${pct}%`;
             });
         }
 
