@@ -6,33 +6,39 @@
     <title>My Journey Tracker</title>
     <style>
         body { background-color: #121212; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; padding-bottom: 80px; }
-        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .nav-tabs button { flex: 1; background-color: #333; color: white; padding: 15px; font-size: 1.1rem; border-radius: 8px; border: none; }
+        .nav-tabs { display: flex; gap: 5px; margin-bottom: 20px; }
+        .nav-tabs button { flex: 1; background-color: #333; color: white; padding: 12px 5px; font-size: 1rem; border-radius: 8px; border: none; }
         .nav-tabs button.active { border: 2px solid #ffffff; font-weight: bold; }
+        
         .card { border: 1px solid #ffffff; border-radius: 8px; padding: 20px; margin-bottom: 20px; background-color: #1e1e1e; }
         h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; }
         
-        /* Compact Inputs */
         input[type="text"], input[type="time"], input[type="number"], input[type="date"], select, textarea {
-            background-color: #2c2c2c; color: #ffffff; border: 1px solid #ffffff; border-radius: 4px; padding: 10px; box-sizing: border-box; margin-top: 8px; margin-bottom: 10px;
+            background-color: #2c2c2c; color: #ffffff; border: 1px solid #ffffff; border-radius: 4px; padding: 10px; box-sizing: border-box; margin-top: 8px; margin-bottom: 10px; width: 100%;
         }
         .compact-row { display: flex; gap: 15px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
         .compact-row > div { flex: 1; min-width: 120px; }
         
-        textarea { width: 100%; resize: vertical; min-height: 100px; }
+        textarea { resize: vertical; min-height: 100px; }
         
         button.action-btn { border: none; border-radius: 4px; padding: 12px 20px; font-size: 1rem; cursor: pointer; width: 100%; font-weight: bold; color: white; margin-top: 10px; }
         .btn-red { background-color: #8B0000; }
         .btn-blue { background-color: #1e3a8a; }
+        .btn-yellow { background-color: #b8860b; } /* Dark Golden Yellow for Planner */
         
-        /* Exercise Set Rows */
+        /* Exercise Rows */
         .set-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background-color: #2c2c2c; padding: 10px; border-radius: 4px; }
         .set-row span { font-weight: bold; width: 50px; }
         .set-row input { width: 70px; margin: 0; padding: 8px; }
         .btn-done { background-color: #4CAF50; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; flex: 1; cursor: pointer; }
         .btn-done.completed { background-color: #555; text-decoration: line-through; }
         
-        /* Floating Timer */
+        /* Top Five Checklist */
+        .top-five-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .top-five-row input[type="checkbox"] { transform: scale(1.5); margin-right: 5px; cursor: pointer; }
+        .top-five-row input[type="text"] { margin: 0; flex: 1; }
+        .top-five-row input[type="checkbox"]:checked + input[type="text"] { text-decoration: line-through; color: #888; border-color: #555; }
+        
         #rest-timer-bar { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: white; text-align: center; padding: 15px; font-size: 1.5rem; font-weight: bold; display: none; border-top: 2px solid white; }
         
         .tab-content { display: none; }
@@ -44,6 +50,7 @@
     <div class="nav-tabs">
         <button id="nav-tab1" class="active" onclick="switchTab('tab1')">Spirit (Red)</button>
         <button id="nav-tab2" onclick="switchTab('tab2')">Exercise (Blue)</button>
+        <button id="nav-tab3" onclick="switchTab('tab3')">Planner (Yellow)</button>
     </div>
 
     <!-- TAB 1: SPIRIT -->
@@ -120,6 +127,35 @@
         </div>
     </div>
 
+    <!-- TAB 3: PLANNER -->
+    <div id="tab3" class="tab-content">
+        <div class="card">
+            <h2>Today's Top Five</h2>
+            <div class="top-five-row"><input type="checkbox"><input type="text" placeholder="1. "></div>
+            <div class="top-five-row"><input type="checkbox"><input type="text" placeholder="2. "></div>
+            <div class="top-five-row"><input type="checkbox"><input type="text" placeholder="3. "></div>
+            <div class="top-five-row"><input type="checkbox"><input type="text" placeholder="4. "></div>
+            <div class="top-five-row"><input type="checkbox"><input type="text" placeholder="5. "></div>
+        </div>
+
+        <div class="card">
+            <h2>Appointments & Notes</h2>
+            <textarea placeholder="Jot down meetings, times, and general notes here..."></textarea>
+        </div>
+
+        <div class="card">
+            <h2>Must Contact Today</h2>
+            <textarea placeholder="Calls, emails, or texts to send today..." style="min-height: 80px;"></textarea>
+        </div>
+
+        <div class="card">
+            <h2>Coming Up</h2>
+            <textarea placeholder="Next week, next month, future plans..." style="min-height: 80px;"></textarea>
+        </div>
+        
+        <button class="action-btn btn-yellow" onclick="alert('Planner saved!')">SAVE PLANNER</button>
+    </div>
+
     <div id="rest-timer-bar">Rest: <span id="timer-display">40</span>s</div>
 
     <script>
@@ -130,20 +166,18 @@
             document.getElementById('nav-' + tabId).classList.add('active');
         }
 
-        // --- AUDIO BEEP GENERATOR ---
         function playBeep() {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!AudioContext) return;
             const ctx = new AudioContext();
             const osc = ctx.createOscillator();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(800, ctx.currentTime); // High pitch beep
+            osc.frequency.setValueAtTime(800, ctx.currentTime);
             osc.connect(ctx.destination);
             osc.start();
-            osc.stop(ctx.currentTime + 0.5); // Beep for half a second
+            osc.stop(ctx.currentTime + 0.5);
         }
 
-        // --- TIMER LOGIC ---
         let timerInterval;
         function startTimer() {
             clearInterval(timerInterval);
@@ -165,7 +199,6 @@
             }, 1000);
         }
 
-        // --- DYNAMIC SET LOGIC ---
         let totalSets = 3;
         function addSet() {
             totalSets++;
@@ -186,17 +219,14 @@
             buttonElement.innerText = 'Completed';
             buttonElement.disabled = true;
 
-            // Check if this is the last set in the container
             const allSetRows = document.querySelectorAll('#sets-container .set-row');
             const thisRow = buttonElement.parentElement;
             
-            // If it's NOT the last set, start the timer
             if (allSetRows[allSetRows.length - 1] !== thisRow) {
                 startTimer();
             }
         }
 
-        // Tab 1 Scoring placeholders
         function saveSleep() { alert('Sleep Saved!'); }
         function saveMeditation() { alert('Meditation Saved!'); }
         function logFast() { alert('Fast Logged!'); }
