@@ -6,53 +6,73 @@
     <title>My Journey Tracker</title>
     <style>
         body { background-color: #121212; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; padding-bottom: 80px; }
+        
+        /* Navigation Tabs */
         .nav-tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
-        .nav-tabs button { flex: 1; background-color: #333; color: white; padding: 12px 5px; font-size: 0.9rem; border-radius: 8px; border: none; min-width: 70px; }
+        .nav-tabs button { flex: 1; background-color: #333; color: white; padding: 12px 5px; font-size: 0.9rem; border-radius: 8px; border: none; min-width: 70px; cursor: pointer; }
         .nav-tabs button.active { border: 2px solid #ffffff; font-weight: bold; }
         
+        /* Cards */
         .card { border: 1px solid #ffffff; border-radius: 8px; padding: 20px; margin-bottom: 20px; background-color: #1e1e1e; }
-        h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
         
+        /* Inputs & Textareas */
         input[type="text"], input[type="time"], input[type="number"], input[type="date"], select, textarea {
-            background-color: #2c2c2c; color: #ffffff; border: 1px solid #ffffff; border-radius: 4px; padding: 10px; box-sizing: border-box; margin-top: 8px; margin-bottom: 10px; width: 100%;
+            background-color: #2c2c2c; color: #ffffff; border: 1px solid #ffffff; border-radius: 4px; padding: 10px; box-sizing: border-box; margin-top: 5px; margin-bottom: 10px; width: 100%;
         }
-        .compact-row { display: flex; gap: 15px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
-        .compact-row > div { flex: 1; min-width: 120px; }
-        
         textarea { resize: vertical; min-height: 100px; }
         
-        button.action-btn { border: none; border-radius: 4px; padding: 12px 20px; font-size: 1rem; cursor: pointer; width: 100%; font-weight: bold; color: white; margin-top: 10px; }
+        /* Specific input sizing */
+        .narrow-input { width: 140px !important; }
+        
+        /* Layout formatting */
+        .compact-row { display: flex; gap: 15px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+        .nutrition-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .nutrition-grid div { display: flex; flex-direction: column; }
+        .nutrition-grid input { width: 100% !important; margin: 5px 0 0 0; padding: 8px; font-size: 0.9rem; }
+        .nutrition-grid label { font-size: 0.85rem; }
+
+        /* UNIFORM BUTTON SIZING */
+        button.action-btn, button.btn-done { 
+            border: none; border-radius: 4px; padding: 10px 20px; font-size: 0.9rem; 
+            cursor: pointer; font-weight: bold; color: white; margin-top: 5px; margin-right: 10px; margin-bottom: 10px;
+            display: inline-block; width: auto; 
+        }
+        
+        /* Button Colors */
         .btn-red { background-color: #8B0000; }
         .btn-blue { background-color: #1e3a8a; }
         .btn-yellow { background-color: #b8860b; }
-        .btn-green { background-color: #1b5e20; } /* Dark Green for Nutrition */
-        
-        /* Exercise Rows */
-        .set-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background-color: #2c2c2c; padding: 10px; border-radius: 4px; }
-        .set-row span { font-weight: bold; width: 50px; }
-        .set-row input { width: 70px; margin: 0; padding: 8px; }
-        .btn-done { background-color: #4CAF50; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; flex: 1; cursor: pointer; }
+        .btn-green { background-color: #1b5e20; }
+        .btn-done { background-color: #4CAF50; padding: 8px 15px; margin: 0; }
         .btn-done.completed { background-color: #555; text-decoration: line-through; }
         
-        /* Top Five Checklist */
+        /* Exercise Set Rows */
+        .set-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background-color: #2c2c2c; padding: 10px; border-radius: 4px; flex-wrap: wrap; }
+        .set-row span { font-weight: bold; width: 50px; }
+        .set-row input { width: 70px !important; margin: 0; padding: 8px; }
+        
+        /* Planner Top Five Checklist */
         .top-five-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         .top-five-row input[type="checkbox"] { transform: scale(1.5); margin-right: 5px; cursor: pointer; }
         .top-five-row input[type="text"] { margin: 0; flex: 1; }
         .top-five-row input[type="checkbox"]:checked + input[type="text"] { text-decoration: line-through; color: #888; border-color: #555; }
         
-        #rest-timer-bar { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: white; text-align: center; padding: 15px; font-size: 1.5rem; font-weight: bold; display: none; border-top: 2px solid white; }
-        
+        /* Floating Timer & Visuals */
+        #rest-timer-bar { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: white; text-align: center; padding: 15px; font-size: 1.5rem; font-weight: bold; display: none; border-top: 2px solid white; box-sizing: border-box; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        .intake-list p { margin: 5px 0; font-size: 1rem; display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .dv-percent { color: #aaaaaa; font-size: 0.85rem; margin-left: 10px; }
     </style>
 </head>
 <body>
 
     <div class="nav-tabs">
-        <button id="nav-tab1" class="active" onclick="switchTab('tab1')">Spirit (Red)</button>
-        <button id="nav-tab2" onclick="switchTab('tab2')">Exercise (Blue)</button>
-        <button id="nav-tab3" onclick="switchTab('tab3')">Planner (Yellow)</button>
-        <button id="nav-tab4" onclick="switchTab('tab4')">Food (Green)</button>
+        <button id="nav-tab1" class="active" onclick="switchTab('tab1')">Spirit</button>
+        <button id="nav-tab2" onclick="switchTab('tab2')">Exercise</button>
+        <button id="nav-tab3" onclick="switchTab('tab3')">Planner</button>
+        <button id="nav-tab4" onclick="switchTab('tab4')">Food</button>
     </div>
 
     <!-- TAB 1: SPIRIT -->
@@ -60,15 +80,15 @@
         <div class="card">
             <h2>Sleep Log (Goal: 7.5 hrs)</h2>
             <div class="compact-row">
-                <div><label>Bedtime:</label><input type="time" id="bedtime"></div>
-                <div><label>Wake Time:</label><input type="time" id="waketime"></div>
+                <div><label>Bedtime:</label><input type="time" id="bedtime" class="narrow-input"></div>
+                <div><label>Wake Time:</label><input type="time" id="waketime" class="narrow-input"></div>
             </div>
             <button class="action-btn btn-red" onclick="saveSleep()">SAVE SLEEP</button>
         </div>
         <div class="card">
             <h2>Daily Scripture & Journal</h2>
             <input type="text" id="scripture-ref" placeholder="Reference (e.g., Romans 12:1-2)">
-            <button class="action-btn btn-red" style="margin-bottom: 15px;" onclick="alert('API Placeholder')">FETCH SCRIPTURE</button>
+            <button class="action-btn btn-red" onclick="alert('API Placeholder')">FETCH SCRIPTURE</button>
             <textarea id="journal-entry" placeholder="Key Points & Meditations..."></textarea>
             <button class="action-btn btn-red" onclick="saveMeditation()">SAVE MEDITATION</button>
         </div>
@@ -76,8 +96,8 @@
             <h2>Fasting Commitment</h2>
             <input type="text" id="fast-type" placeholder="Type of Fast (e.g., Water, Daniel)">
             <div class="compact-row">
-                <div><label>Start Date:</label><input type="date" id="fast-start"></div>
-                <div><label>End Date:</label><input type="date" id="fast-end"></div>
+                <div><label>Start Date:</label><input type="date" id="fast-start" class="narrow-input"></div>
+                <div><label>End Date:</label><input type="date" id="fast-end" class="narrow-input"></div>
             </div>
             <button class="action-btn btn-red" onclick="logFast()">LOG FAST</button>
         </div>
@@ -87,17 +107,13 @@
     <div id="tab2" class="tab-content">
         <div class="card">
             <h2>Today's Vitals</h2>
-            <div class="compact-row">
-                <div>
-                    <label>Bodyweight (lbs):</label>
-                    <input type="number" id="daily-weight" placeholder="e.g., 185" style="width: 100px;">
-                </div>
-            </div>
+            <label>Bodyweight (lbs):</label><br>
+            <input type="number" id="daily-weight" placeholder="185" class="narrow-input">
         </div>
-        <div class="compact-row">
-            <button class="action-btn btn-blue" style="margin-top:0;">PULL</button>
-            <button class="action-btn btn-blue" style="margin-top:0;">PUSH</button>
-            <button class="action-btn btn-blue" style="margin-top:0;">WALK</button>
+        <div style="margin-bottom: 20px;">
+            <button class="action-btn btn-blue">PULL</button>
+            <button class="action-btn btn-blue">PUSH</button>
+            <button class="action-btn btn-blue">WALK</button>
         </div>
         <div class="card" id="chest-press-container">
             <h2>Chest Press</h2>
@@ -154,20 +170,42 @@
     <div id="tab4" class="tab-content">
         <div class="card">
             <h2>Daily Goals</h2>
-            <div class="compact-row">
-                <div><label>Calorie Target:</label><input type="number" id="target-cals" value="2000" onchange="updateTargets()"></div>
-                <div><label>Protein Target (g):</label><input type="number" id="target-protein" value="150" onchange="updateTargets()"></div>
+            <div class="nutrition-grid">
+                <div><label>Cals</label><input type="number" id="t-cals" value="2000" onchange="updateUI()"></div>
+                <div><label>Tot Fat(g)</label><input type="number" id="t-fat" value="65" onchange="updateUI()"></div>
+                <div><label>Sat Fat(g)</label><input type="number" id="t-satfat" value="20" onchange="updateUI()"></div>
+                <div><label>Chol(mg)</label><input type="number" id="t-chol" value="300" onchange="updateUI()"></div>
+                <div><label>Sod(mg)</label><input type="number" id="t-sod" value="2300" onchange="updateUI()"></div>
+                <div><label>Carbs(g)</label><input type="number" id="t-carbs" value="200" onchange="updateUI()"></div>
+                <div><label>Fiber(g)</label><input type="number" id="t-fiber" value="28" onchange="updateUI()"></div>
+                <div><label>Sugars(g)</label><input type="number" id="t-sugar" value="50" onchange="updateUI()"></div>
+                <div><label>Protein(g)</label><input type="number" id="t-pro" value="150" onchange="updateUI()"></div>
             </div>
         </div>
 
         <div class="card">
             <h2>Add Meal / Item</h2>
-            <input type="text" id="food-name" placeholder="Food Name (e.g., Chili)">
-            <div class="compact-row">
-                <div><label>Calories:</label><input type="number" id="food-cals" placeholder="0"></div>
-                <div><label>Protein (g):</label><input type="number" id="food-protein" placeholder="0"></div>
+            <label>Quick Add Saved Items:</label>
+            <select id="saved-meals" onchange="loadSavedMeal()">
+                <option value="">-- Select a saved item --</option>
+                <option value="coffee">Morning Coffee</option>
+                <option value="chicken">4oz Chicken Breast</option>
+            </select>
+
+            <input type="text" id="f-name" placeholder="Food Name (e.g., Chili)">
+            <div class="nutrition-grid">
+                <div><label>Cals</label><input type="number" id="f-cals" placeholder="0"></div>
+                <div><label>Tot Fat</label><input type="number" id="f-fat" placeholder="0"></div>
+                <div><label>Sat Fat</label><input type="number" id="f-satfat" placeholder="0"></div>
+                <div><label>Chol</label><input type="number" id="f-chol" placeholder="0"></div>
+                <div><label>Sod</label><input type="number" id="f-sod" placeholder="0"></div>
+                <div><label>Carbs</label><input type="number" id="f-carbs" placeholder="0"></div>
+                <div><label>Fiber</label><input type="number" id="f-fiber" placeholder="0"></div>
+                <div><label>Sugars</label><input type="number" id="f-sugar" placeholder="0"></div>
+                <div><label>Protein</label><input type="number" id="f-pro" placeholder="0"></div>
             </div>
-            <div class="compact-row">
+            
+            <div>
                 <button class="action-btn btn-green" onclick="logFood()">LOG FOOD</button>
                 <button class="action-btn btn-green" onclick="alert('Barcode API will open camera here')">SCAN BARCODE</button>
             </div>
@@ -175,15 +213,23 @@
 
         <div class="card">
             <h2>Today's Intake</h2>
-            <p style="font-size: 1.1rem;"><strong>Calories:</strong> <span id="total-cals">0</span> / <span id="display-target-cals">2000</span></p>
-            <p style="font-size: 1.1rem;"><strong>Protein:</strong> <span id="total-protein">0</span>g / <span id="display-target-protein">150</span>g</p>
+            <div class="intake-list">
+                <p><span>Calories</span> <span><b id="d-cals">0</b> / <span id="dt-cals">2000</span> <span class="dv-percent" id="p-cals">(0%)</span></span></p>
+                <p><span>Total Fat</span> <span><b id="d-fat">0</b>g / <span id="dt-fat">65</span>g <span class="dv-percent" id="p-fat">(0%)</span></span></p>
+                <p><span>Saturated Fat</span> <span><b id="d-satfat">0</b>g / <span id="dt-satfat">20</span>g <span class="dv-percent" id="p-satfat">(0%)</span></span></p>
+                <p><span>Cholesterol</span> <span><b id="d-chol">0</b>mg / <span id="dt-chol">300</span>mg <span class="dv-percent" id="p-chol">(0%)</span></span></p>
+                <p><span>Sodium</span> <span><b id="d-sod">0</b>mg / <span id="dt-sod">2300</span>mg <span class="dv-percent" id="p-sod">(0%)</span></span></p>
+                <p><span>Total Carbs</span> <span><b id="d-carbs">0</b>g / <span id="dt-carbs">200</span>g <span class="dv-percent" id="p-carbs">(0%)</span></span></p>
+                <p><span>Dietary Fiber</span> <span><b id="d-fiber">0</b>g / <span id="dt-fiber">28</span>g <span class="dv-percent" id="p-fiber">(0%)</span></span></p>
+                <p><span>Sugars</span> <span><b id="d-sugar">0</b>g / <span id="dt-sugar">50</span>g <span class="dv-percent" id="p-sugar">(0%)</span></span></p>
+                <p><span>Protein</span> <span><b id="d-pro">0</b>g / <span id="dt-pro">150</span>g <span class="dv-percent" id="p-pro">(0%)</span></span></p>
+            </div>
         </div>
     </div>
 
     <div id="rest-timer-bar">Rest: <span id="timer-display">40</span>s</div>
 
     <script>
-        // --- NAVIGATION ---
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
@@ -191,7 +237,6 @@
             document.getElementById('nav-' + tabId).classList.add('active');
         }
 
-        // --- EXERCISE TIMER ---
         function playBeep() {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!AudioContext) return;
@@ -229,57 +274,70 @@
             const container = document.getElementById('sets-container');
             const newSet = document.createElement('div');
             newSet.className = 'set-row';
-            newSet.innerHTML = `
-                <span>Set ${totalSets}</span>
-                <input type="number" placeholder="Wt">
-                <input type="number" placeholder="Reps">
-                <button class="btn-done" onclick="finishSet(this)">Done</button>
-            `;
+            newSet.innerHTML = `<span>Set ${totalSets}</span><input type="number" placeholder="Wt"><input type="number" placeholder="Reps"><button class="btn-done" onclick="finishSet(this)">Done</button>`;
             container.appendChild(newSet);
         }
 
-        function finishSet(buttonElement) {
-            buttonElement.classList.add('completed');
-            buttonElement.innerText = 'Completed';
-            buttonElement.disabled = true;
-            const allSetRows = document.querySelectorAll('#sets-container .set-row');
-            const thisRow = buttonElement.parentElement;
-            if (allSetRows[allSetRows.length - 1] !== thisRow) {
-                startTimer();
-            }
+        function finishSet(btn) {
+            btn.classList.add('completed'); btn.innerText = 'Completed'; btn.disabled = true;
+            const all = document.querySelectorAll('#sets-container .set-row');
+            if (all[all.length - 1] !== btn.parentElement) startTimer();
         }
 
-        // --- NUTRITION LOGIC ---
-        let dailyCalories = 0;
-        let dailyProtein = 0;
+        const daily = { cals: 0, fat: 0, satfat: 0, chol: 0, sod: 0, carbs: 0, fiber: 0, sugar: 0, pro: 0 };
+        const keys = Object.keys(daily);
 
-        function updateTargets() {
-            document.getElementById('display-target-cals').innerText = document.getElementById('target-cals').value;
-            document.getElementById('display-target-protein').innerText = document.getElementById('target-protein').value;
+        function updateUI() {
+            keys.forEach(k => {
+                const target = parseInt(document.getElementById(`t-${k}`).value) || 1; 
+                document.getElementById(`dt-${k}`).innerText = target;
+                document.getElementById(`d-${k}`).innerText = daily[k];
+                const pct = Math.round((daily[k] / target) * 100);
+                document.getElementById(`p-${k}`).innerText = `(${pct}%)`;
+            });
+        }
+
+        function loadSavedMeal() {
+            const meal = document.getElementById('saved-meals').value;
+            const setVals = (n, c, f, sf, ch, so, ca, fi, su, p) => {
+                document.getElementById('f-name').value = n;
+                document.getElementById('f-cals').value = c;
+                document.getElementById('f-fat').value = f;
+                document.getElementById('f-satfat').value = sf;
+                document.getElementById('f-chol').value = ch;
+                document.getElementById('f-sod').value = so;
+                document.getElementById('f-carbs').value = ca;
+                document.getElementById('f-fiber').value = fi;
+                document.getElementById('f-sugar').value = su;
+                document.getElementById('f-pro').value = p;
+            };
+
+            if (meal === "coffee") setVals("Morning Coffee", 140, 4, 2, 10, 15, 22, 0, 20, 1);
+            else if (meal === "chicken") setVals("4oz Chicken Breast", 185, 4, 1, 95, 85, 0, 0, 0, 35);
+            else setVals("", "", "", "", "", "", "", "", "", "");
         }
 
         function logFood() {
-            const cals = parseInt(document.getElementById('food-cals').value) || 0;
-            const protein = parseInt(document.getElementById('food-protein').value) || 0;
+            let loggedAny = false;
+            keys.forEach(k => {
+                const val = parseInt(document.getElementById(`f-${k}`).value) || 0;
+                if (val > 0) loggedAny = true;
+                daily[k] += val;
+                document.getElementById(`f-${k}`).value = ''; 
+            });
             
-            if (cals === 0 && protein === 0) {
-                alert("Please enter calories or protein.");
+            if (!loggedAny) {
+                alert("Please enter at least one nutritional value.");
                 return;
             }
 
-            dailyCalories += cals;
-            dailyProtein += protein;
-
-            document.getElementById('total-cals').innerText = dailyCalories;
-            document.getElementById('total-protein').innerText = dailyProtein;
-
-            // Clear inputs for next meal
-            document.getElementById('food-name').value = '';
-            document.getElementById('food-cals').value = '';
-            document.getElementById('food-protein').value = '';
+            document.getElementById('f-name').value = '';
+            document.getElementById('saved-meals').value = '';
+            updateUI();
         }
 
-        // --- PLACEHOLDERS ---
+        window.onload = updateUI;
+        
         function saveSleep() { alert('Sleep Saved!'); }
         function saveMeditation() { alert('Meditation Saved!'); }
         function logFast() { alert('Fast Logged!'); }
