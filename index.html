@@ -118,6 +118,36 @@
         window.dbGet = get;
         window.dbChild = child;
         window.database = db;
+
+        // Auto-fetch data on load
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (window.database) {
+                try {
+                    const todayKey = new Date().toISOString().split('T')[0];
+                    const snapshot = await window.dbGet(window.dbChild(window.dbRef(window.database), 'days/' + todayKey));
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        if (data.score !== undefined) {
+                            globalDailyScore = data.score;
+                            document.getElementById('master-score').innerHTML = `${globalDailyScore} <span>pts</span>`;
+                        }
+                        if (data.weight) document.getElementById('daily-weight').value = data.weight;
+                        if (data.steps) document.getElementById('daily-steps').value = data.steps;
+                        if (data.journal) document.getElementById('journal-entry').value = data.journal;
+                        if (data.notes) document.getElementById('freeform-notes').value = data.notes;
+                        
+                        // Update summaries
+                        if (data.weight) document.getElementById('dash-vitals').innerText = 'Yes';
+                        if (data.journal) {
+                            const sentences = data.journal.match(/[^.!?]+[.!?]+/g) || [];
+                            document.getElementById('dash-journal').innerText = sentences.length;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error loading cloud data:", e);
+                }
+            }
+        });
     </script>
 </head>
 <body>
@@ -452,7 +482,7 @@
                 return;
             }
             try {
-                const todayKey = new Date().toISOString().split('T')[0]; // e.g., "2026-09-16"
+                const todayKey = new Date().toISOString().split('T')[0];
                 const payload = {
                     score: globalDailyScore,
                     weight: document.getElementById('daily-weight').value,
