@@ -22,6 +22,12 @@
         
         .narrow-input { width: 140px !important; }
         
+        /* New Aligned Grid for Vitals */
+        .aligned-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .input-group { display: flex; align-items: center; }
+        .input-group label { width: 110px; font-size: 0.95rem; }
+        .input-group input { margin: 0; } /* Removes default top/bottom margin for perfect alignment */
+
         .compact-row { display: flex; gap: 15px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
         .nutrition-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-bottom: 15px; }
         .nutrition-grid div { display: flex; flex-direction: column; }
@@ -94,13 +100,23 @@
     <div id="tab2" class="tab-content">
         <div class="card">
             <h2>Today's Vitals</h2>
-            <div class="compact-row">
-                <div><label>Weight (lbs):</label><input type="number" id="daily-weight" placeholder="185" class="narrow-input"></div>
-                <div><label>Steps:</label><input type="number" id="daily-steps" placeholder="10000" class="narrow-input"></div>
-            </div>
-            <div class="compact-row">
-                <div><label>Bedtime:</label><input type="time" id="bedtime" class="narrow-input"></div>
-                <div><label>Wake Time:</label><input type="time" id="waketime" class="narrow-input"></div>
+            <div class="aligned-grid">
+                <div class="input-group">
+                    <label>Weight (lbs):</label>
+                    <input type="number" id="daily-weight" placeholder="185" class="narrow-input">
+                </div>
+                <div class="input-group">
+                    <label>Steps:</label>
+                    <input type="number" id="daily-steps" placeholder="10000" class="narrow-input">
+                </div>
+                <div class="input-group">
+                    <label>Bedtime:</label>
+                    <input type="time" id="bedtime" class="narrow-input">
+                </div>
+                <div class="input-group">
+                    <label>Wake Time:</label>
+                    <input type="time" id="waketime" class="narrow-input">
+                </div>
             </div>
             <button class="action-btn btn-blue" onclick="alert('Vitals Saved!')">SAVE VITALS</button>
         </div>
