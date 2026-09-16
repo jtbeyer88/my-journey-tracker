@@ -22,12 +22,12 @@
         }
         .nav-tabs button.active { opacity: 1; border: 2px solid #ffffff; font-weight: bold; }
         
-        #nav-tab1 { background-color: #8B0000; } /* Spirit Red */
-        #nav-tab2 { background-color: #1e3a8a; } /* Exercise Blue */
-        #nav-tab3 { background-color: #b8860b; } /* Planner Yellow */
-        #nav-tab4 { background-color: #1b5e20; } /* Food Green */
-        #nav-tab5 { background-color: #4a148c; } /* Totals Purple */
-        #nav-tab6 { background-color: #d97706; } /* Notes Orange */
+        #nav-tab1 { background-color: #8B0000; } 
+        #nav-tab2 { background-color: #1e3a8a; } 
+        #nav-tab3 { background-color: #b8860b; } 
+        #nav-tab4 { background-color: #1b5e20; } 
+        #nav-tab5 { background-color: #4a148c; } 
+        #nav-tab6 { background-color: #d97706; } 
         
         .card { border: 1px solid #ffffff; border-radius: 8px; padding: 20px; margin-bottom: 20px; background-color: #1e1e1e; }
         h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
@@ -88,12 +88,37 @@
         .score-display h1 { font-size: 4rem; margin: 0; color: #ffffff; }
         .score-display span { font-size: 1.2rem; color: #aaaaaa; font-weight: normal; }
 
-        /* Calendar Grid Mockup */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-top: 10px; }
         .cal-header { font-weight: bold; color: #888; font-size: 0.8rem; padding-bottom: 5px; }
         .cal-day { background-color: #2c2c2c; padding: 12px 5px; border-radius: 4px; font-size: 0.9rem; min-height: 40px; }
         .cal-day.today { border: 2px solid #d97706; font-weight: bold; }
     </style>
+
+    <!-- Firebase SDK Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPOrIKVW5uuHOecC_Us4-gSlL1LaJmCpg",
+            authDomain: "journeytracker-be94e.firebaseapp.com",
+            projectId: "journeytracker-be94e",
+            storageBucket: "journeytracker-be94e.firebasestorage.app",
+            messagingSenderId: "845355425795",
+            appId: "1:845355425795:web:aa48d0cc95edb63990ae36",
+            measurementId: "G-B6VF9Z8513"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Expose database functions globally to the app
+        window.dbRef = ref;
+        window.dbSet = set;
+        window.dbGet = get;
+        window.dbChild = child;
+        window.database = db;
+    </script>
 </head>
 <body>
 
@@ -258,7 +283,7 @@
         <div class="card score-display">
             <h2>Total Daily Score</h2>
             <h1 id="master-score">0 <span>pts</span></h1>
-            <button class="action-btn btn-purple" onclick="alert('In the future, this will sync your day to the database!')" style="margin-top: 15px;">FINISH DAY & SYNC</button>
+            <button class="action-btn btn-purple" onclick="syncDayToCloud()" style="margin-top: 15px;">FINISH DAY & SYNC</button>
         </div>
 
         <div class="card">
@@ -291,56 +316,20 @@
         <div class="card">
             <h2>Free-Form Notes (S-Pen Friendly)</h2>
             <textarea id="freeform-notes" placeholder="Jot down quick thoughts, write with your S-Pen, or type freely here..."></textarea>
-            <button class="action-btn btn-orange" onclick="alert('Notes Saved!')">SAVE NOTES</button>
+            <button class="action-btn btn-orange" onclick="saveNotes()">SAVE NOTES</button>
         </div>
 
         <div class="card">
             <h2>Calendar & Schedule (General / Work)</h2>
             <p style="color: #aaa; font-size: 0.9rem; margin-top: 0;">Google Calendar API sync placeholder</p>
             <div class="calendar-grid">
-                <div class="cal-header">Sun</div>
-                <div class="cal-header">Mon</div>
-                <div class="cal-header">Tue</div>
-                <div class="cal-header">Wed</div>
-                <div class="cal-header">Thu</div>
-                <div class="cal-header">Fri</div>
-                <div class="cal-header">Sat</div>
-                
-                <div class="cal-day" style="opacity: 0.3;">28</div>
-                <div class="cal-day" style="opacity: 0.3;">29</div>
-                <div class="cal-day" style="opacity: 0.3;">30</div>
-                <div class="cal-day" style="opacity: 0.3;">31</div>
-                <div class="cal-day">1</div>
-                <div class="cal-day">2</div>
-                <div class="cal-day">3</div>
-                <div class="cal-day">4</div>
-                <div class="cal-day">5</div>
-                <div class="cal-day">6</div>
-                <div class="cal-day">7</div>
-                <div class="cal-day">8</div>
-                <div class="cal-day">9</div>
-                <div class="cal-day">10</div>
-                <div class="cal-day">11</div>
-                <div class="cal-day">12</div>
-                <div class="cal-day">13</div>
-                <div class="cal-day">14</div>
-                <div class="cal-day">15</div>
-                <div class="cal-day today">16</div>
-                <div class="cal-day">17</div>
-                <div class="cal-day">18</div>
-                <div class="cal-day">19</div>
-                <div class="cal-day">20</div>
-                <div class="cal-day">21</div>
-                <div class="cal-day">22</div>
-                <div class="cal-day">23</div>
-                <div class="cal-day">24</div>
-                <div class="cal-day">25</div>
-                <div class="cal-day">26</div>
-                <div class="cal-day">27</div>
-                <div class="cal-day">28</div>
-                <div class="cal-day">29</div>
-                <div class="cal-day">30</div>
-                <div class="cal-day" style="opacity: 0.3;">1</div>
+                <div class="cal-header">Sun</div><div class="cal-header">Mon</div><div class="cal-header">Tue</div><div class="cal-header">Wed</div><div class="cal-header">Thu</div><div class="cal-header">Fri</div><div class="cal-header">Sat</div>
+                <div class="cal-day" style="opacity: 0.3;">28</div><div class="cal-day" style="opacity: 0.3;">29</div><div class="cal-day" style="opacity: 0.3;">30</div><div class="cal-day" style="opacity: 0.3;">31</div>
+                <div class="cal-day">1</div><div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div><div class="cal-day">6</div><div class="cal-day">7</div>
+                <div class="cal-day">8</div><div class="cal-day">9</div><div class="cal-day">10</div><div class="cal-day">11</div><div class="cal-day">12</div><div class="cal-day">13</div><div class="cal-day">14</div>
+                <div class="cal-day">15</div><div class="cal-day today">16</div><div class="cal-day">17</div><div class="cal-day">18</div><div class="cal-day">19</div><div class="cal-day">20</div><div class="cal-day">21</div>
+                <div class="cal-day">22</div><div class="cal-day">23</div><div class="cal-day">24</div><div class="cal-day">25</div><div class="cal-day">26</div><div class="cal-day">27</div><div class="cal-day">28</div>
+                <div class="cal-day">29</div><div class="cal-day">30</div><div class="cal-day" style="opacity: 0.3;">1</div>
             </div>
         </div>
     </div>
@@ -450,6 +439,35 @@
 
             addPoints(pts);
             alert(`Planner Saved! You earned +${pts} points.`);
+        }
+
+        function saveNotes() {
+            alert('Notes Saved locally!');
+        }
+
+        // --- CLOUD SYNC FUNCTION ---
+        async function syncDayToCloud() {
+            if (!window.database) {
+                alert("Database not connected yet.");
+                return;
+            }
+            try {
+                const todayKey = new Date().toISOString().split('T')[0]; // e.g., "2026-09-16"
+                const payload = {
+                    score: globalDailyScore,
+                    weight: document.getElementById('daily-weight').value,
+                    steps: document.getElementById('daily-steps').value,
+                    journal: document.getElementById('journal-entry').value,
+                    notes: document.getElementById('freeform-notes').value,
+                    timestamp: Date.now()
+                };
+
+                await window.dbSet(window.dbRef(window.database, 'days/' + todayKey), payload);
+                alert("Success! Your day's data has been synced to the cloud database.");
+            } catch (error) {
+                console.error(error);
+                alert("Sync failed. Check console for details.");
+            }
         }
 
         const targets = { cals: 2000, fat: 65, satfat: 20, chol: 300, sod: 2300, carbs: 200, fiber: 28, sugar: 50, pro: 150 };
