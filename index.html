@@ -7,39 +7,33 @@
     <style>
         body { background-color: #121212; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; padding-bottom: 80px; }
         
-        /* Navigation Tabs */
         .nav-tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
         .nav-tabs button { flex: 1; background-color: #333; color: white; padding: 12px 5px; font-size: 0.9rem; border-radius: 8px; border: none; min-width: 70px; cursor: pointer; }
         .nav-tabs button.active { border: 2px solid #ffffff; font-weight: bold; }
         
-        /* Cards */
         .card { border: 1px solid #ffffff; border-radius: 8px; padding: 20px; margin-bottom: 20px; background-color: #1e1e1e; }
         h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+        h3.meal-header { margin: 10px 0 5px 0; font-size: 1rem; color: #aaaaaa; border-bottom: 1px dotted #555; padding-bottom: 5px; }
         
-        /* Inputs & Textareas */
         input[type="text"], input[type="time"], input[type="number"], input[type="date"], select, textarea {
             background-color: #2c2c2c; color: #ffffff; border: 1px solid #ffffff; border-radius: 4px; padding: 10px; box-sizing: border-box; margin-top: 5px; margin-bottom: 10px; width: 100%;
         }
         textarea { resize: vertical; min-height: 100px; }
         
-        /* Specific input sizing */
         .narrow-input { width: 140px !important; }
         
-        /* Layout formatting */
         .compact-row { display: flex; gap: 15px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
         .nutrition-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-bottom: 15px; }
         .nutrition-grid div { display: flex; flex-direction: column; }
         .nutrition-grid input { width: 100% !important; margin: 5px 0 0 0; padding: 8px; font-size: 0.9rem; }
         .nutrition-grid label { font-size: 0.85rem; }
 
-        /* UNIFORM BUTTON SIZING */
         button.action-btn, button.btn-done { 
             border: none; border-radius: 4px; padding: 10px 20px; font-size: 0.9rem; 
             cursor: pointer; font-weight: bold; color: white; margin-top: 5px; margin-right: 10px; margin-bottom: 10px;
             display: inline-block; width: auto; 
         }
         
-        /* Button Colors */
         .btn-red { background-color: #8B0000; }
         .btn-blue { background-color: #1e3a8a; }
         .btn-yellow { background-color: #b8860b; }
@@ -47,23 +41,24 @@
         .btn-done { background-color: #4CAF50; padding: 8px 15px; margin: 0; }
         .btn-done.completed { background-color: #555; text-decoration: line-through; }
         
-        /* Exercise Set Rows */
         .set-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background-color: #2c2c2c; padding: 10px; border-radius: 4px; flex-wrap: wrap; }
         .set-row span { font-weight: bold; width: 50px; }
         .set-row input { width: 70px !important; margin: 0; padding: 8px; }
         
-        /* Planner Top Five Checklist */
         .top-five-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         .top-five-row input[type="checkbox"] { transform: scale(1.5); margin-right: 5px; cursor: pointer; }
         .top-five-row input[type="text"] { margin: 0; flex: 1; }
         .top-five-row input[type="checkbox"]:checked + input[type="text"] { text-decoration: line-through; color: #888; border-color: #555; }
         
-        /* Floating Timer & Visuals */
         #rest-timer-bar { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: white; text-align: center; padding: 15px; font-size: 1.5rem; font-weight: bold; display: none; border-top: 2px solid white; box-sizing: border-box; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        
         .intake-list p { margin: 5px 0; font-size: 1rem; display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .dv-percent { color: #aaaaaa; font-size: 0.85rem; margin-left: 10px; }
+        
+        .meal-list { list-style: none; padding: 0; margin: 0 0 15px 0; }
+        .meal-list li { padding: 5px 0; font-size: 0.95rem; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
@@ -168,29 +163,27 @@
 
     <!-- TAB 4: NUTRITION -->
     <div id="tab4" class="tab-content">
-        <div class="card">
-            <h2>Daily Goals</h2>
-            <div class="nutrition-grid">
-                <div><label>Cals</label><input type="number" id="t-cals" value="2000" onchange="updateUI()"></div>
-                <div><label>Tot Fat(g)</label><input type="number" id="t-fat" value="65" onchange="updateUI()"></div>
-                <div><label>Sat Fat(g)</label><input type="number" id="t-satfat" value="20" onchange="updateUI()"></div>
-                <div><label>Chol(mg)</label><input type="number" id="t-chol" value="300" onchange="updateUI()"></div>
-                <div><label>Sod(mg)</label><input type="number" id="t-sod" value="2300" onchange="updateUI()"></div>
-                <div><label>Carbs(g)</label><input type="number" id="t-carbs" value="200" onchange="updateUI()"></div>
-                <div><label>Fiber(g)</label><input type="number" id="t-fiber" value="28" onchange="updateUI()"></div>
-                <div><label>Sugars(g)</label><input type="number" id="t-sugar" value="50" onchange="updateUI()"></div>
-                <div><label>Protein(g)</label><input type="number" id="t-pro" value="150" onchange="updateUI()"></div>
-            </div>
-        </div>
-
+        
         <div class="card">
             <h2>Add Meal / Item</h2>
-            <label>Quick Add Saved Items:</label>
-            <select id="saved-meals" onchange="loadSavedMeal()">
-                <option value="">-- Select a saved item --</option>
-                <option value="coffee">Morning Coffee</option>
-                <option value="chicken">4oz Chicken Breast</option>
-            </select>
+            <div class="compact-row">
+                <div>
+                    <label>Meal Time:</label>
+                    <select id="meal-time">
+                        <option value="morning">Morning</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                    </select>
+                </div>
+                <div style="flex: 2;">
+                    <label>Quick Add Saved Items:</label>
+                    <select id="saved-meals" onchange="loadSavedMeal()">
+                        <option value="">-- Select a saved item --</option>
+                        <option value="coffee">Morning Coffee</option>
+                        <option value="chicken">4oz Chicken Breast</option>
+                    </select>
+                </div>
+            </div>
 
             <input type="text" id="f-name" placeholder="Food Name (e.g., Chili)">
             <div class="nutrition-grid">
@@ -209,6 +202,18 @@
                 <button class="action-btn btn-green" onclick="logFood()">LOG FOOD</button>
                 <button class="action-btn btn-green" onclick="alert('Barcode API will open camera here')">SCAN BARCODE</button>
             </div>
+        </div>
+
+        <div class="card">
+            <h2>Today's Meals</h2>
+            <h3 class="meal-header">Morning</h3>
+            <ul id="list-morning" class="meal-list"></ul>
+            
+            <h3 class="meal-header">Lunch</h3>
+            <ul id="list-lunch" class="meal-list"></ul>
+            
+            <h3 class="meal-header">Dinner</h3>
+            <ul id="list-dinner" class="meal-list"></ul>
         </div>
 
         <div class="card">
@@ -284,12 +289,13 @@
             if (all[all.length - 1] !== btn.parentElement) startTimer();
         }
 
+        const targets = { cals: 2000, fat: 65, satfat: 20, chol: 300, sod: 2300, carbs: 200, fiber: 28, sugar: 50, pro: 150 };
         const daily = { cals: 0, fat: 0, satfat: 0, chol: 0, sod: 0, carbs: 0, fiber: 0, sugar: 0, pro: 0 };
         const keys = Object.keys(daily);
 
         function updateUI() {
             keys.forEach(k => {
-                const target = parseInt(document.getElementById(`t-${k}`).value) || 1; 
+                const target = targets[k]; 
                 document.getElementById(`dt-${k}`).innerText = target;
                 document.getElementById(`d-${k}`).innerText = daily[k];
                 const pct = Math.round((daily[k] / target) * 100);
@@ -319,6 +325,10 @@
 
         function logFood() {
             let loggedAny = false;
+            let foodName = document.getElementById('f-name').value || "Custom Item";
+            let mealTime = document.getElementById('meal-time').value;
+            let addedCals = parseInt(document.getElementById('f-cals').value) || 0;
+
             keys.forEach(k => {
                 const val = parseInt(document.getElementById(`f-${k}`).value) || 0;
                 if (val > 0) loggedAny = true;
@@ -330,6 +340,12 @@
                 alert("Please enter at least one nutritional value.");
                 return;
             }
+
+            // Append to the specific meal list
+            let ul = document.getElementById(`list-${mealTime}`);
+            let li = document.createElement('li');
+            li.innerHTML = `<span><strong>${foodName}</strong></span> <span>${addedCals} Cals</span>`;
+            ul.appendChild(li);
 
             document.getElementById('f-name').value = '';
             document.getElementById('saved-meals').value = '';
