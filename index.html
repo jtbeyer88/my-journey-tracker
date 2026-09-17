@@ -122,8 +122,16 @@
         window.dbChild = child;
         window.database = db;
 
-        const todayObj = new Date();
-        window.currentSelectedDate = todayObj.toISOString().split('T')[0];
+        // Get accurate local date string YYYY-MM-DD avoiding UTC shift bugs
+        function getLocalTodayStr() {
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        window.currentSelectedDate = getLocalTodayStr();
 
         window.loadDateData = async function(dateStr, element) {
             window.currentSelectedDate = dateStr;
@@ -172,27 +180,27 @@
             const title = document.getElementById('calendar-title-month');
             if(!grid) return;
 
-            const year = todayObj.getFullYear();
-            const month = todayObj.getMonth();
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
             
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             title.innerText = `${monthNames[month]} ${year}`;
 
             const firstDayIndex = new Date(year, month, 1).getDay();
             const totalDays = new Date(year, month + 1, 0).getDate();
-            const todayStr = todayObj.toISOString().split('T')[0];
+            const todayStr = getLocalTodayStr();
 
             let html = '';
-            // Blank padding days for the start of the week
             for (let i = 0; i < firstDayIndex; i++) {
                 html += `<div class="cal-day empty"></div>`;
             }
 
-            // Actual days of the month
             for (let d = 1; d <= totalDays; d++) {
                 const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 let classes = 'cal-day';
-                if (dayStr === todayStr) classes += ' today selected';
+                if (dayStr === todayStr) classes += ' today';
+                if (dayStr === window.currentSelectedDate) classes += ' selected';
 
                 html += `<div class="${classes}" onclick="loadDateData('${dayStr}', this)">${d}</div>`;
             }
@@ -558,7 +566,7 @@
                 return;
             }
             try {
-                const targetKey = window.currentSelectedDate || new Date().toISOString().split('T')[0];
+                const targetKey = window.currentSelectedDate || getLocalTodayStr();
                 const payload = {
                     score: globalDailyScore,
                     weight: document.getElementById('daily-weight').value,
@@ -619,7 +627,7 @@
                 const val = parseInt(document.getElementById(`f-${k}`).value) || 0;
                 if (val > 0) loggedAny = true;
                 daily[k] += val;
-                document.getElementById(`f-${k}`).value = ''; 
+                document.getElementById(`f-${~k}`).value = ''; 
             });
             
             if (!loggedAny) {
