@@ -90,8 +90,9 @@
 
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-top: 10px; }
         .cal-header { font-weight: bold; color: #888; font-size: 0.8rem; padding-bottom: 5px; }
-        .cal-day { background-color: #2c2c2c; padding: 12px 5px; border-radius: 4px; font-size: 0.9rem; min-height: 40px; cursor: pointer; transition: background 0.2s; }
+        .cal-day { background-color: #2c2c2c; padding: 12px 5px; border-radius: 4px; font-size: 0.9rem; min-height: 40px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; }
         .cal-day:hover { background-color: #444; }
+        .cal-day.empty { background-color: transparent; cursor: default; }
         .cal-day.today { border: 2px solid #d97706; font-weight: bold; }
         .cal-day.selected { background-color: #d97706; color: white; font-weight: bold; }
         #active-date-banner { background-color: #2c2c2c; padding: 8px; text-align: center; border-radius: 4px; margin-bottom: 15px; font-size: 0.9rem; color: #d97706; font-weight: bold; }
@@ -121,18 +122,16 @@
         window.dbChild = child;
         window.database = db;
 
-        // Active Date Tracker
-        window.currentSelectedDate = new Date().toISOString().split('T')[0];
+        const todayObj = new Date();
+        window.currentSelectedDate = todayObj.toISOString().split('T')[0];
 
-        window.loadDateData = async function(dateStr) {
+        window.loadDateData = async function(dateStr, element) {
             window.currentSelectedDate = dateStr;
             document.getElementById('active-date-banner').innerText = `Viewing Date: ${dateStr}`;
             
-            // Highlight selected calendar day
             document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('selected'));
-            event.target.classList.add('selected');
+            if(element) element.classList.add('selected');
 
-            // Reset UI fields before loading
             globalDailyScore = 0;
             document.getElementById('master-score').innerHTML = `0 <span>pts</span>`;
             document.getElementById('daily-weight').value = '';
@@ -168,9 +167,42 @@
             }
         };
 
-        // Auto-fetch today on load
+        function buildCalendar() {
+            const grid = document.getElementById('calendar-days-grid');
+            const title = document.getElementById('calendar-title-month');
+            if(!grid) return;
+
+            const year = todayObj.getFullYear();
+            const month = todayObj.getMonth();
+            
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            title.innerText = `${monthNames[month]} ${year}`;
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            const todayStr = todayObj.toISOString().split('T')[0];
+
+            let html = '';
+            // Blank padding days for the start of the week
+            for (let i = 0; i < firstDayIndex; i++) {
+                html += `<div class="cal-day empty"></div>`;
+            }
+
+            // Actual days of the month
+            for (let d = 1; d <= totalDays; d++) {
+                const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                let classes = 'cal-day';
+                if (dayStr === todayStr) classes += ' today selected';
+
+                html += `<div class="${classes}" onclick="loadDateData('${dayStr}', this)">${d}</div>`;
+            }
+            grid.innerHTML = html;
+        }
+
         window.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('active-date-banner').innerText = `Viewing Date: ${window.currentSelectedDate}`;
+            buildCalendar();
+
             if (window.database) {
                 try {
                     const snapshot = await window.dbGet(window.dbChild(window.dbRef(window.database), 'days/' + window.currentSelectedDate));
@@ -400,18 +432,12 @@
         </div>
 
         <div class="card">
-            <h2>September 2026 Archive</h2>
+            <h2 id="calendar-title-month">Calendar</h2>
             <p style="color: #aaa; font-size: 0.9rem; margin-top: 0;">Tap any date to load or edit that day's log:</p>
             <div class="calendar-grid">
                 <div class="cal-header">Sun</div><div class="cal-header">Mon</div><div class="cal-header">Tue</div><div class="cal-header">Wed</div><div class="cal-header">Thu</div><div class="cal-header">Fri</div><div class="cal-header">Sat</div>
-                <div class="cal-day" style="opacity: 0.3;">28</div><div class="cal-day" style="opacity: 0.3;">29</div><div class="cal-day" style="opacity: 0.3;">30</div><div class="cal-day" style="opacity: 0.3;">31</div>
-                <div class="cal-day" onclick="loadDateData('2026-09-01')">1</div><div class="cal-day" onclick="loadDateData('2026-09-02')">2</div><div class="cal-day" onclick="loadDateData('2026-09-03')">3</div>
-                <div class="cal-day" onclick="loadDateData('2026-09-04')">4</div><div class="cal-day" onclick="loadDateData('2026-09-05')">5</div><div class="cal-day" onclick="loadDateData('2026-09-06')">6</div><div class="cal-day" onclick="loadDateData('2026-09-07')">7</div>
-                <div class="cal-day" onclick="loadDateData('2026-09-08')">8</div><div class="cal-day" onclick="loadDateData('2026-09-09')">9</div><div class="cal-day" onclick="loadDateData('2026-09-10')">10</div><div class="cal-day" onclick="loadDateData('2026-09-11')">11</div><div class="cal-day" onclick="loadDateData('2026-09-12')">12</div><div class="cal-day" onclick="loadDateData('2026-09-13')">13</div><div class="cal-day" onclick="loadDateData('2026-09-14')">14</div>
-                <div class="cal-day" onclick="loadDateData('2026-09-15')">15</div><div class="cal-day today selected" onclick="loadDateData('2026-09-16')">16</div><div class="cal-day" onclick="loadDateData('2026-09-17')">17</div><div class="cal-day" onclick="loadDateData('2026-09-18')">18</div><div class="cal-day" onclick="loadDateData('2026-09-19')">19</div><div class="cal-day" onclick="loadDateData('2026-09-20')">20</div><div class="cal-day" onclick="loadDateData('2026-09-21')">21</div>
-                <div class="cal-day" onclick="loadDateData('2026-09-22')">22</div><div class="cal-day" onclick="loadDateData('2026-09-23')">23</div><div class="cal-day" onclick="loadDateData('2026-09-24')">24</div><div class="cal-day" onclick="loadDateData('2026-09-25')">25</div><div class="cal-day" onclick="loadDateData('2026-09-26')">26</div><div class="cal-day" onclick="loadDateData('2026-09-27')">27</div><div class="cal-day" onclick="loadDateData('2026-09-28')">28</div>
-                <div class="cal-day" onclick="loadDateData('2026-09-29')">29</div><div class="cal-day" onclick="loadDateData('2026-09-30')">30</div><div class="cal-day" style="opacity: 0.3;">1</div>
             </div>
+            <div id="calendar-days-grid" class="calendar-grid"></div>
         </div>
     </div>
 
@@ -526,7 +552,6 @@
             alert('Notes Saved locally!');
         }
 
-        // --- CLOUD SYNC FUNCTION (Saves to active selected date) ---
         async function syncDayToCloud() {
             if (!window.database) {
                 alert("Database not connected yet.");
