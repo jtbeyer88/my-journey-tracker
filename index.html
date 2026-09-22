@@ -674,18 +674,6 @@
       return isNaN(parsed.getTime()) ? fallbackObj : parsed;
     }
 
-    function getFormattedEntryDate(shift) {
-      const ms = resolveShiftTimestamp(shift);
-      if (ms > 0) {
-        return formatDayDate(new Date(ms));
-      }
-      if (shift.date) {
-        const parsed = parseCustomDate(shift.date, new Date());
-        return formatDayDate(parsed);
-      }
-      return '';
-    }
-
     function formatTime12(dateObj) {
       return dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
     }
@@ -783,6 +771,18 @@
       return 0;
     }
 
+    function getFormattedEntryDate(shift) {
+      const ms = resolveShiftTimestamp(shift);
+      if (ms > 0) {
+        return formatDayDate(new Date(ms));
+      }
+      if (shift.date) {
+        const parsed = parseCustomDate(shift.date, new Date());
+        return formatDayDate(parsed);
+      }
+      return '';
+    }
+
     function getAllShiftsPool() {
       let pool = [...shiftHistory];
       const archivedWeeks = JSON.parse(localStorage.getItem('archivedWeeks') || '[]');
@@ -801,7 +801,7 @@
     function generateCSVString(shiftsArray) {
       let csv = "Date,Location,Clock In,Clock Out,Duration,Decimal Hours,Notes\n";
 
-      // Chronological ascending sort: Monday to Sunday, earliest start to latest
+      // Explicit Chronological Ascending Sort (Monday Morning -> Sunday Night)
       const sortedShifts = [...shiftsArray].sort((a, b) => {
         return resolveShiftTimestamp(a) - resolveShiftTimestamp(b);
       });
