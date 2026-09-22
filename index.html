@@ -523,7 +523,6 @@
         </label>
       </div>
 
-      <!-- README LINK -->
       <div style="margin-top: 20px;">
         <a href="README.html" class="btn-action-wide" style="border-color: var(--primary); color: var(--primary);">
           📖 View Build History & README
@@ -647,7 +646,7 @@
     }
 
     function formatDayDate(dateObj) {
-      return dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+      return dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     }
 
     function parseCustomDate(inputStr, fallbackObj) {
@@ -680,20 +679,8 @@
         return formatDayDate(new Date(shift.inTimestamp));
       }
       if (shift.date) {
-        if (shift.date.includes('/')) {
-          const parts = shift.date.split('/');
-          if (parts.length === 3) {
-            const m = parseInt(parts[0], 10) - 1;
-            const d = parseInt(parts[1], 10);
-            const y = parseInt(parts[2], 10);
-            return formatDayDate(new Date(y, m, d));
-          }
-        }
-        const parsed = new Date(shift.date);
-        if (!isNaN(parsed.getTime())) {
-          return formatDayDate(parsed);
-        }
-        return shift.date;
+        const parsed = parseCustomDate(shift.date, new Date());
+        return formatDayDate(parsed);
       }
       return '';
     }
@@ -780,6 +767,22 @@
       return mon;
     }
 
+    // Resolves a true millisecond timestamp even if inTimestamp was missing or corrupted
+    function resolveShiftTimestamp(shift) {
+      if (typeof shift.inTimestamp === 'number' && !isNaN(shift.inTimestamp) && shift.inTimestamp > 0) {
+        return shift.inTimestamp;
+      }
+      if (shift.date) {
+        const base = parseCustomDate(shift.date, new Date());
+        if (shift.in) {
+          const parsed = parseTime12Input(shift.in, base);
+          if (parsed) return parsed.getTime();
+        }
+        return base.getTime();
+      }
+      return 0;
+    }
+
     function getAllShiftsPool() {
       let pool = [...shiftHistory];
       const archivedWeeks = JSON.parse(localStorage.getItem('archivedWeeks') || '[]');
@@ -797,13 +800,17 @@
 
     function generateCSVString(shiftsArray) {
       let csv = "Date,Location,Clock In,Clock Out,Duration,Decimal Hours,Notes\n";
-      
-      // Sort chronologically: Monday through Sunday, and earliest start time to latest
-      const sortedShifts = [...shiftsArray].sort((a, b) => (a.inTimestamp || 0) - (b.inTimestamp || 0));
+
+      // Robust chronological sort: Monday to Sunday, morning to evening
+      const sortedShifts = [...shiftsArray].sort((a, b) => {
+        return resolveShiftTimestamp(a) - resolveShiftTimestamp(b);
+      });
 
       sortedShifts.forEach(s => {
         const entryDate = getFormattedEntryDate(s);
-        const rawDiff = s.outTimestamp - s.inTimestamp;
+        const inMs = resolveShiftTimestamp(s);
+        const outMs = s.outTimestamp || (inMs + (s.duration ? 0 : 0));
+        const rawDiff = outMs > inMs ? (outMs - inMs) : 0;
         const roundedDiff = roundTo10Minutes(rawDiff);
         const decHours = (roundedDiff / (1000 * 60 * 60)).toFixed(2);
         csv += `"${entryDate}","${(s.location || '').replace(/"/g, '""')}","${s.in}","${s.out}","${formatTime(roundedDiff)}","${decHours}","${(s.note || '').replace(/"/g, '""')}"\n`;
@@ -833,7 +840,7 @@
       const lastArchivedMon = parseInt(localStorage.getItem('lastArchivedMon') || '0', 10);
 
       if (lastArchivedMon !== 0 && currentMonStart > lastArchivedMon) {
-        const pastWeekShifts = shiftHistory.filter(s => s.inTimestamp < currentMonStart);
+        const pastWeekShifts = shiftHistory.filter(s => resolveShiftTimestamp(s) < currentMonStart);
         if (pastWeekShifts.length > 0) {
           let archivedWeeks = JSON.parse(localStorage.getItem('archivedWeeks') || '[]');
           if (!archivedWeeks.some(w => w.weekStart === lastArchivedMon)) {
@@ -844,7 +851,6 @@
             });
             localStorage.setItem('archivedWeeks', JSON.stringify(archivedWeeks));
 
-            // Automatic upload to Google Drive
             const prevMonDate = new Date(lastArchivedMon);
             const prevSunDate = new Date(lastArchivedMon + (6 * 24 * 60 * 60 * 1000));
             const fname = `Work_Week_${prevMonDate.toISOString().slice(0,10)}_to_${prevSunDate.toISOString().slice(0,10)}`;
@@ -861,7 +867,10 @@
       const currentMonStart = getMondayStart(now).getTime();
       const prevMonStart = currentMonStart - (7 * 24 * 60 * 60 * 1000);
       const allShifts = getAllShiftsPool();
-      const prevShifts = allShifts.filter(s => s.inTimestamp >= prevMonStart && s.inTimestamp < currentMonStart);
+      const prevShifts = allShifts.filter(s => {
+        const t = resolveShiftTimestamp(s);
+        return t >= prevMonStart && t < currentMonStart;
+      });
 
       if (prevShifts.length === 0) {
         return alert("No shifts found for the previous week to sync.");
@@ -937,8 +946,9 @@
 
       let totalMs = 0;
       shiftHistory.forEach(s => {
-        if (s.inTimestamp >= monStart.getTime() && s.inTimestamp <= sunEnd.getTime()) {
-          const shiftDuration = s.outTimestamp - s.inTimestamp;
+        const inMs = resolveShiftTimestamp(s);
+        if (inMs >= monStart.getTime() && inMs <= sunEnd.getTime()) {
+          const shiftDuration = s.outTimestamp ? (s.outTimestamp - inMs) : 0;
           totalMs += roundTo10Minutes(shiftDuration);
         }
       });
@@ -1175,7 +1185,7 @@
         return;
       }
 
-      const sortedShifts = [...shiftHistory].sort((a, b) => b.inTimestamp - a.inTimestamp);
+      const sortedShifts = [...shiftHistory].sort((a, b) => resolveShiftTimestamp(b) - resolveShiftTimestamp(a));
 
       const startOfToday = new Date();
       startOfToday.setHours(0, 0, 0, 0);
@@ -1183,7 +1193,9 @@
       endOfToday.setHours(23, 59, 59, 999);
 
       container.innerHTML = sortedShifts.map(shift => {
-        const rawDiff = (shift.outTimestamp && shift.inTimestamp) ? (shift.outTimestamp - shift.inTimestamp) : 0;
+        const inMs = resolveShiftTimestamp(shift);
+        const outMs = shift.outTimestamp || inMs;
+        const rawDiff = outMs > inMs ? (outMs - inMs) : 0;
         const diffMs = roundTo10Minutes(rawDiff);
 
         const timeDisplay = appSettings.showDecimal 
@@ -1191,7 +1203,7 @@
           : formatStandardDuration(diffMs);
 
         const displayDate = getFormattedEntryDate(shift);
-        const isToday = shift.inTimestamp >= startOfToday.getTime() && shift.inTimestamp <= endOfToday.getTime();
+        const isToday = inMs >= startOfToday.getTime() && inMs <= endOfToday.getTime();
         const todayClass = isToday ? ' log-today' : '';
 
         return `
@@ -1233,13 +1245,18 @@
     }
 
     function buildWeekBreakdown(sourceShifts, monStart, sunEnd, includeActive, locContainer, dayContainer) {
-      const weekShifts = sourceShifts.filter(s => s.inTimestamp >= monStart && s.inTimestamp <= sunEnd);
+      const weekShifts = sourceShifts.filter(s => {
+        const t = resolveShiftTimestamp(s);
+        return t >= monStart && t <= sunEnd;
+      });
 
       const locMap = {};
       let totalMs = 0;
       weekShifts.forEach(s => {
         const loc = s.location || 'Unassigned';
-        const ms = roundTo10Minutes(s.outTimestamp - s.inTimestamp);
+        const inMs = resolveShiftTimestamp(s);
+        const outMs = s.outTimestamp || inMs;
+        const ms = roundTo10Minutes(outMs > inMs ? (outMs - inMs) : 0);
         locMap[loc] = (locMap[loc] || 0) + ms;
         totalMs += ms;
       });
@@ -1268,9 +1285,11 @@
       const dayMs = [0, 0, 0, 0, 0, 0, 0];
 
       weekShifts.forEach(s => {
-        const d = new Date(s.inTimestamp).getDay();
+        const inMs = resolveShiftTimestamp(s);
+        const outMs = s.outTimestamp || inMs;
+        const d = new Date(inMs).getDay();
         const idx = (d === 0) ? 6 : d - 1;
-        dayMs[idx] += roundTo10Minutes(s.outTimestamp - s.inTimestamp);
+        dayMs[idx] += roundTo10Minutes(outMs > inMs ? (outMs - inMs) : 0);
       });
 
       if (includeActive && activeShift) {
@@ -1300,14 +1319,14 @@
       const s = shiftHistory.find(item => item.id === id);
       if (!s) return;
 
-      const currentBaseDate = s.inTimestamp ? new Date(s.inTimestamp) : new Date();
+      const currentBaseDate = new Date(resolveShiftTimestamp(s) || Date.now());
 
       const datePrompt = prompt("Shift Date (Press OK to keep, or edit):", formatDayDate(currentBaseDate));
       if (datePrompt === null) return;
       const baseDate = parseCustomDate(datePrompt, currentBaseDate);
 
-      const inDate = new Date(s.inTimestamp);
-      const outDate = new Date(s.outTimestamp);
+      const inDate = new Date(resolveShiftTimestamp(s) || currentBaseDate.getTime());
+      const outDate = new Date(s.outTimestamp || currentBaseDate.getTime());
 
       const inPrompt = prompt("Clock In time (e.g. 0917, 917a, 2117, 9:17 AM):", formatTime12(inDate));
       if (inPrompt === null) return;
@@ -1365,13 +1384,16 @@
       const currentMonStart = getMondayStart(new Date()).getTime();
 
       if (scope === 'current') {
-        rows = shiftHistory.filter(s => s.inTimestamp >= currentMonStart);
+        rows = shiftHistory.filter(s => resolveShiftTimestamp(s) >= currentMonStart);
         filename = "current_week_shifts";
         if (rows.length === 0) return alert("No shifts logged for current week yet.");
       } else if (scope === 'prev') {
         const prevMonStart = currentMonStart - (7 * 24 * 60 * 60 * 1000);
         const allShifts = getAllShiftsPool();
-        rows = allShifts.filter(s => s.inTimestamp >= prevMonStart && s.inTimestamp < currentMonStart);
+        rows = allShifts.filter(s => {
+          const t = resolveShiftTimestamp(s);
+          return t >= prevMonStart && t < currentMonStart;
+        });
         filename = "previous_week_shifts";
         if (rows.length === 0) return alert("No shifts logged for previous week.");
       }
