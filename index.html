@@ -675,8 +675,9 @@
     }
 
     function getFormattedEntryDate(shift) {
-      if (shift.inTimestamp) {
-        return formatDayDate(new Date(shift.inTimestamp));
+      const ms = resolveShiftTimestamp(shift);
+      if (ms > 0) {
+        return formatDayDate(new Date(ms));
       }
       if (shift.date) {
         const parsed = parseCustomDate(shift.date, new Date());
@@ -767,7 +768,6 @@
       return mon;
     }
 
-    // Resolves a true millisecond timestamp even if inTimestamp was missing or corrupted
     function resolveShiftTimestamp(shift) {
       if (typeof shift.inTimestamp === 'number' && !isNaN(shift.inTimestamp) && shift.inTimestamp > 0) {
         return shift.inTimestamp;
@@ -801,7 +801,7 @@
     function generateCSVString(shiftsArray) {
       let csv = "Date,Location,Clock In,Clock Out,Duration,Decimal Hours,Notes\n";
 
-      // Robust chronological sort: Monday to Sunday, morning to evening
+      // Chronological ascending sort: Monday to Sunday, earliest start to latest
       const sortedShifts = [...shiftsArray].sort((a, b) => {
         return resolveShiftTimestamp(a) - resolveShiftTimestamp(b);
       });
@@ -809,7 +809,7 @@
       sortedShifts.forEach(s => {
         const entryDate = getFormattedEntryDate(s);
         const inMs = resolveShiftTimestamp(s);
-        const outMs = s.outTimestamp || (inMs + (s.duration ? 0 : 0));
+        const outMs = s.outTimestamp || inMs;
         const rawDiff = outMs > inMs ? (outMs - inMs) : 0;
         const roundedDiff = roundTo10Minutes(rawDiff);
         const decHours = (roundedDiff / (1000 * 60 * 60)).toFixed(2);
