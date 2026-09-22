@@ -1,663 +1,1461 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Journey Tracker</title>
-    <style>
-        body { background-color: #121212; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; padding-bottom: 80px; }
-        
-        .nav-tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
-        .nav-tabs button { 
-            flex: 1; 
-            color: white; 
-            padding: 12px 5px; 
-            font-size: 0.9rem; 
-            border-radius: 8px; 
-            border: 2px solid transparent; 
-            min-width: 60px; 
-            cursor: pointer; 
-            opacity: 0.5; 
-            transition: opacity 0.2s;
-        }
-        .nav-tabs button.active { opacity: 1; border: 2px solid #ffffff; font-weight: bold; }
-        
-        #nav-tab1 { background-color: #8B0000; } 
-        #nav-tab2 { background-color: #1e3a8a; } 
-        #nav-tab3 { background-color: #b8860b; } 
-        #nav-tab4 { background-color: #1b5e20; } 
-        #nav-tab5 { background-color: #4a148c; } 
-        #nav-tab6 { background-color: #d97706; } 
-        
-        .card { border: 1px solid #ffffff; border-radius: 8px; padding: 20px; margin-bottom: 20px; background-color: #1e1e1e; }
-        h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
-        h3.meal-header { margin: 10px 0 5px 0; font-size: 1rem; color: #aaaaaa; border-bottom: 1px dotted #555; padding-bottom: 5px; }
-        
-        input[type="text"], input[type="time"], input[type="number"], input[type="date"], select, textarea {
-            background-color: #2c2c2c; color: #ffffff; border: 1px solid #ffffff; border-radius: 4px; padding: 10px; box-sizing: border-box; margin-top: 5px; margin-bottom: 10px; width: 100%;
-        }
-        textarea { resize: vertical; min-height: 120px; }
-        
-        .narrow-input { width: 140px !important; }
-        .aligned-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; margin-bottom: 15px; }
-        .input-group { display: flex; align-items: center; }
-        .input-group label { width: 110px; font-size: 0.95rem; }
-        .input-group input { margin: 0; } 
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Time Tracker</title>
 
-        .compact-row { display: flex; gap: 15px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
-        .nutrition-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-bottom: 15px; }
-        .nutrition-grid div { display: flex; flex-direction: column; }
-        .nutrition-grid input { width: 100% !important; margin: 5px 0 0 0; padding: 8px; font-size: 0.9rem; }
-        .nutrition-grid label { font-size: 0.85rem; }
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#121212" id="metaThemeColor" />
+  <meta name="mobile-web-app-capable" content="yes" />
 
-        button.action-btn, button.btn-done { 
-            border: none; border-radius: 4px; padding: 10px 20px; font-size: 0.9rem; 
-            cursor: pointer; font-weight: bold; color: white; margin-top: 5px; margin-right: 10px; margin-bottom: 10px;
-            display: inline-block; width: auto; 
-        }
-        
-        .btn-red { background-color: #8B0000; }
-        .btn-blue { background-color: #1e3a8a; }
-        .btn-yellow { background-color: #b8860b; }
-        .btn-green { background-color: #1b5e20; }
-        .btn-purple { background-color: #4a148c; }
-        .btn-orange { background-color: #d97706; }
-        
-        .btn-done { background-color: #4CAF50; padding: 8px 15px; margin: 0; }
-        .btn-done.completed { background-color: #555; text-decoration: line-through; }
-        
-        .set-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background-color: #2c2c2c; padding: 10px; border-radius: 4px; flex-wrap: wrap; }
-        .set-row span { font-weight: bold; width: 50px; }
-        .set-row input { width: 70px !important; margin: 0; padding: 8px; }
-        
-        .top-five-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-        .top-five-row input[type="checkbox"] { transform: scale(1.5); margin-right: 5px; cursor: pointer; }
-        .top-five-row input[type="text"] { margin: 0; flex: 1; }
-        .top-five-row input[type="checkbox"]:checked + input[type="text"] { text-decoration: line-through; color: #888; border-color: #555; }
-        
-        #rest-timer-bar { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1e3a8a; color: white; text-align: center; padding: 15px; font-size: 1.5rem; font-weight: bold; display: none; border-top: 2px solid white; box-sizing: border-box; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        .intake-list p { margin: 5px 0; font-size: 1rem; display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        .dv-percent { color: #aaaaaa; font-size: 0.85rem; margin-left: 10px; }
-        .meal-list { list-style: none; padding: 0; margin: 0 0 15px 0; }
-        .meal-list li { padding: 5px 0; font-size: 0.95rem; display: flex; justify-content: space-between; }
-        
-        .score-display { text-align: center; margin: 20px 0; }
-        .score-display h1 { font-size: 4rem; margin: 0; color: #ffffff; }
-        .score-display span { font-size: 1.2rem; color: #aaaaaa; font-weight: normal; }
+  <style>
+    :root {
+      --bg: #121212;
+      --card-bg: #1e1e1e;
+      --card-today: #2c2c2c;
+      --today-border: #444444;
+      --border: #333333;
+      --text: #ffffff;
+      --subtext: #aaaaaa;
+      --primary: #4caf50;
+      --danger: #f44336;
+      --accent: #2196f3;
+      --tag-bg: #2d3748;
+      --tag-text: #90cdf4;
+      --note-bg: #252525;
+      --note-text: #dddddd;
+      --nav-bg: #181818;
+    }
 
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-top: 10px; }
-        .cal-header { font-weight: bold; color: #888; font-size: 0.8rem; padding-bottom: 5px; }
-        .cal-day { background-color: #2c2c2c; padding: 12px 5px; border-radius: 4px; font-size: 0.9rem; min-height: 40px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; }
-        .cal-day:hover { background-color: #444; }
-        .cal-day.empty { background-color: transparent; cursor: default; }
-        .cal-day.today { border: 2px solid #d97706; font-weight: bold; }
-        .cal-day.selected { background-color: #d97706; color: white; font-weight: bold; }
-        #active-date-banner { background-color: #2c2c2c; padding: 8px; text-align: center; border-radius: 4px; margin-bottom: 15px; font-size: 0.9rem; color: #d97706; font-weight: bold; }
-        
-        .gcal-container { width: 100%; height: 350px; border: 0; border-radius: 6px; margin-top: 10px; background-color: #2c2c2c; }
-    </style>
+    body[data-theme="pure-black"] {
+      --bg: #000000;
+      --card-bg: #0d0d0d;
+      --card-today: #222222;
+      --today-border: #3a3a3a;
+      --border: #222222;
+      --text: #ffffff;
+      --subtext: #888888;
+      --note-bg: #141414;
+      --nav-bg: #080808;
+    }
 
-    <!-- Firebase SDK Scripts -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    body[data-theme="white"] {
+      --bg: #f4f6f8;
+      --card-bg: #ffffff;
+      --card-today: #e8ecf0;
+      --today-border: #cbd5e1;
+      --border: #e0e0e0;
+      --text: #1a1a1a;
+      --subtext: #666666;
+      --tag-bg: #e2e8f0;
+      --tag-text: #2b6cb0;
+      --note-bg: #f1f5f9;
+      --note-text: #333333;
+      --nav-bg: #ffffff;
+    }
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDPOrIKVW5uuHOecC_Us4-gSlL1LaJmCpg",
-            authDomain: "journeytracker-be94e.firebaseapp.com",
-            projectId: "journeytracker-be94e",
-            storageBucket: "journeytracker-be94e.firebasestorage.app",
-            messagingSenderId: "845355425795",
-            appId: "1:845355425795:web:aa48d0cc95edb63990ae36",
-            measurementId: "G-B6VF9Z8513"
-        };
+    @media (prefers-color-scheme: light) {
+      body[data-theme="system"] {
+        --bg: #f4f6f8;
+        --card-bg: #ffffff;
+        --card-today: #e8ecf0;
+        --today-border: #cbd5e1;
+        --border: #e0e0e0;
+        --text: #1a1a1a;
+        --subtext: #666666;
+        --tag-bg: #e2e8f0;
+        --tag-text: #2b6cb0;
+        --note-bg: #f1f5f9;
+        --note-text: #333333;
+        --nav-bg: #ffffff;
+      }
+    }
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+    @media (prefers-color-scheme: dark) {
+      body[data-theme="system"] {
+        --bg: #121212;
+        --card-bg: #1e1e1e;
+        --card-today: #2c2c2c;
+        --today-border: #444444;
+        --border: #333333;
+        --text: #ffffff;
+        --subtext: #aaaaaa;
+        --tag-bg: #2d3748;
+        --tag-text: #90cdf4;
+        --note-bg: #252525;
+        --note-text: #dddddd;
+        --nav-bg: #181818;
+      }
+    }
 
-        window.dbRef = ref;
-        window.dbSet = set;
-        window.dbGet = get;
-        window.dbChild = child;
-        window.database = db;
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 16px 16px 80px 16px; display: flex; flex-direction: column; align-items: center; transition: background 0.2s, color 0.2s; }
+    .container { width: 100%; max-width: 480px; }
 
-        function getLocalTodayStr() {
-            const d = new Date();
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .top-bar h2 { font-size: 1.15rem; font-weight: 700; letter-spacing: 0.5px; }
+    .btn-icon { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--subtext); }
 
-        window.currentSelectedDate = getLocalTodayStr();
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 64px;
+      background: var(--nav-bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .nav-tab {
+      flex: 1; height: 100%;
+      background: none; border: none;
+      color: var(--subtext);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3px; font-size: 0.75rem; font-weight: 600; cursor: pointer;
+    }
+    .nav-tab .tab-icon { font-size: 1.25rem; }
+    .nav-tab.active { color: var(--primary); }
 
-        window.loadDateData = async function(dateStr, element) {
-            window.currentSelectedDate = dateStr;
-            document.getElementById('active-date-banner').innerText = `Viewing Date: ${dateStr}`;
-            
-            document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('selected'));
-            if(element) element.classList.add('selected');
+    .tab-content { display: none; width: 100%; }
+    .tab-content.active { display: block; }
 
-            globalDailyScore = 0;
-            document.getElementById('master-score').innerHTML = `0 <span>pts</span>`;
-            document.getElementById('daily-weight').value = '';
-            document.getElementById('daily-steps').value = '';
-            document.getElementById('journal-entry').value = '';
-            document.getElementById('freeform-notes').value = '';
-            document.getElementById('dash-vitals').innerText = 'No';
-            document.getElementById('dash-journal').innerText = '0';
+    .status-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .date-display { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .status-title { font-size: 0.85rem; color: var(--subtext); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+    .timer { font-size: 3rem; font-weight: 700; margin: 6px 0; font-variant-numeric: tabular-nums; }
+    .timestamp-container { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95rem; color: var(--subtext); }
+    .inline-edit-btn { background: none; border: none; color: var(--accent); font-size: 0.85rem; cursor: pointer; text-decoration: underline; }
 
-            if (window.database) {
-                try {
-                    const snapshot = await window.dbGet(window.dbChild(window.dbRef(window.database), 'days/' + dateStr));
-                    if (snapshot.exists()) {
-                        const data = snapshot.val();
-                        if (data.score !== undefined) {
-                            globalDailyScore = data.score;
-                            document.getElementById('master-score').innerHTML = `${globalDailyScore} <span>pts</span>`;
-                        }
-                        if (data.weight) document.getElementById('daily-weight').value = data.weight;
-                        if (data.steps) document.getElementById('daily-steps').value = data.steps;
-                        if (data.journal) document.getElementById('journal-entry').value = data.journal;
-                        if (data.notes) document.getElementById('freeform-notes').value = data.notes;
-                        
-                        if (data.weight) document.getElementById('dash-vitals').innerText = 'Yes';
-                        if (data.journal) {
-                            const sentences = data.journal.match(/[^.!?]+[.!?]+/g) || [];
-                            document.getElementById('dash-journal').innerText = sentences.length;
-                        }
-                    }
-                } catch (e) {
-                    console.error("Error loading date data:", e);
-                }
-            }
-        };
+    .week-summary-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .week-summary-card .label { font-size: 0.9rem; font-weight: 500; }
+    .week-summary-card .val { font-size: 1.25rem; font-weight: bold; color: var(--primary); }
 
-        function buildCalendar() {
-            const grid = document.getElementById('calendar-days-grid');
-            const title = document.getElementById('calendar-title-month');
-            if(!grid) return;
+    .input-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    select, input, textarea {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 12px;
+      font-size: 0.95rem;
+    }
+    select { flex: 1; outline: none; }
+    .btn-small {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    textarea { width: 100%; resize: vertical; min-height: 70px; margin-bottom: 18px; outline: none; }
+    textarea:focus, select:focus { border-color: var(--accent); }
 
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth();
-            
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            title.innerText = `${monthNames[month]} ${year}`;
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .btn:active { opacity: 0.85; }
+    .btn-in { background-color: var(--primary); }
+    .btn-out { background-color: var(--danger); }
 
-            const firstDayIndex = new Date(year, month, 1).getDay();
-            const totalDays = new Date(year, month + 1, 0).getDate();
-            const todayStr = getLocalTodayStr();
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 12px 0;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-add-shift {
+      background: var(--primary);
+      border: none;
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: bold;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .btn-add-shift:active { opacity: 0.85; }
 
-            let html = '';
-            for (let i = 0; i < firstDayIndex; i++) {
-                html += `<div class="cal-day empty"></div>`;
-            }
+    .log-item {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .log-item.log-today {
+      background: var(--card-today);
+      border-color: var(--today-border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .log-top { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 4px; }
+    .log-date { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+    .log-sub { color: var(--subtext); font-size: 0.8rem; margin-bottom: 6px; }
+    .log-tag { display: inline-block; background: var(--tag-bg); color: var(--tag-text); font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; }
+    .log-note { font-style: italic; color: var(--note-text); background: var(--note-bg); padding: 6px 10px; border-radius: 4px; font-size: 0.85rem; }
+    .log-actions { margin-top: 8px; display: flex; justify-content: flex-end; gap: 14px; }
+    .action-btn { background: none; border: none; font-size: 0.8rem; cursor: pointer; }
+    .action-edit { color: var(--accent); }
+    .action-del { color: var(--danger); }
 
-            for (let d = 1; d <= totalDays; d++) {
-                const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                let classes = 'cal-day';
-                if (dayStr === todayStr) classes += ' today';
-                if (dayStr === window.currentSelectedDate) classes += ' selected';
+    .breakdown-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .breakdown-row:last-child { border-bottom: none; }
+    .breakdown-row.total-row {
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+      padding-top: 10px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .btn-action-wide {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 10px;
+      display: block;
+      text-decoration: none;
+    }
+    .empty-state { text-align: center; color: var(--subtext); font-size: 0.9rem; margin: 30px 0; }
 
-                html += `<div class="${classes}" onclick="loadDateData('${dayStr}', this)">${d}</div>`;
-            }
-            grid.innerHTML = html;
-        }
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 1000;
+    }
+    .modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 440px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .setting-item:last-child { border-bottom: none; }
+    .setting-label { font-size: 0.95rem; font-weight: 500; }
+    .setting-desc { font-size: 0.75rem; color: var(--subtext); margin-top: 2px; }
 
-        window.addEventListener('DOMContentLoaded', async () => {
-            document.getElementById('active-date-banner').innerText = `Viewing Date: ${window.currentSelectedDate}`;
-            buildCalendar();
-
-            if (window.database) {
-                try {
-                    const snapshot = await window.dbGet(window.dbChild(window.dbRef(window.database), 'days/' + window.currentSelectedDate));
-                    if (snapshot.exists()) {
-                        const data = snapshot.val();
-                        if (data.score !== undefined) {
-                            globalDailyScore = data.score;
-                            document.getElementById('master-score').innerHTML = `${globalDailyScore} <span>pts</span>`;
-                        }
-                        if (data.weight) document.getElementById('daily-weight').value = data.weight;
-                        if (data.steps) document.getElementById('daily-steps').value = data.steps;
-                        if (data.journal) document.getElementById('journal-entry').value = data.journal;
-                        if (data.notes) document.getElementById('freeform-notes').value = data.notes;
-                        
-                        if (data.weight) document.getElementById('dash-vitals').innerText = 'Yes';
-                        if (data.journal) {
-                            const sentences = data.journal.match(/[^.!?]+[.!?]+/g) || [];
-                            document.getElementById('dash-journal').innerText = sentences.length;
-                        }
-                    }
-                } catch (e) {
-                    console.error("Error loading cloud data:", e);
-                }
-            }
-        });
-    </script>
+    .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #444;
+      transition: .3s;
+      border-radius: 26px;
+    }
+    .slider:before {
+      position: absolute; content: "";
+      height: 20px; width: 20px;
+      left: 3px; bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(20px); }
+  </style>
 </head>
-<body>
-
-    <div id="active-date-banner">Viewing Date: Today</div>
-
-    <div class="nav-tabs">
-        <button id="nav-tab1" class="active" onclick="switchTab('tab1')">Spirit</button>
-        <button id="nav-tab2" onclick="switchTab('tab2')">Exercise</button>
-        <button id="nav-tab3" onclick="switchTab('tab3')">Planner</button>
-        <button id="nav-tab4" onclick="switchTab('tab4')">Food</button>
-        <button id="nav-tab5" onclick="switchTab('tab5')">Totals</button>
-        <button id="nav-tab6" onclick="switchTab('tab6')">Notes</button>
+<body data-theme="dark">
+  <div class="container">
+    
+    <div class="top-bar">
+      <h2>Time Tracker</h2>
+      <button class="btn-icon" onclick="openSettings()" title="Settings">⚙️</button>
     </div>
 
-    <!-- TAB 1: SPIRIT -->
-    <div id="tab1" class="tab-content active">
-        <div class="card">
-            <h2>Daily Scripture & Journal</h2>
-            <input type="text" id="scripture-ref" placeholder="Reference (e.g., Romans 12:1-2)">
-            <button class="action-btn btn-red" onclick="alert('API Placeholder')">FETCH SCRIPTURE</button>
-            <textarea id="journal-entry" placeholder="Key Points & Meditations..."></textarea>
-            <button class="action-btn btn-red" onclick="saveMeditation()">SAVE MEDITATION</button>
+    <!-- TAB 1: CLOCK -->
+    <div id="tabPunch" class="tab-content active">
+      <div class="status-card">
+        <div class="date-display" id="currentDateDisplay"></div>
+        <div class="status-title" id="statusLabel">Status: Clocked Out</div>
+        <div class="timer" id="timerDisplay">00:00:00</div>
+        <div class="timestamp-container">
+          <span id="inTimeDisplay">Not clocked in</span>
+          <button id="editActiveInBtn" class="inline-edit-btn" style="display: none;" onclick="editActiveClockIn()">Edit In-Time</button>
         </div>
-        <div class="card">
-            <h2>Fasting Commitment</h2>
-            <input type="text" id="fast-type" placeholder="Type of Fast (e.g., Water, Daniel)">
-            <div class="compact-row">
-                <div><label>Start Date:</label><input type="date" id="fast-start" class="narrow-input"></div>
-                <div><label>End Date:</label><input type="date" id="fast-end" class="narrow-input"></div>
-            </div>
-            <button class="action-btn btn-red" onclick="logFast()">LOG FAST</button>
+      </div>
+
+      <div class="week-summary-card">
+        <div>
+          <div class="label">Current Week (Mon–Sun)</div>
+          <div style="font-size: 0.75rem; color: var(--subtext);" id="weekRangeLabel"></div>
         </div>
+        <div class="val" id="weekHoursDisplay">0.00 hrs</div>
+      </div>
+
+      <div class="input-row">
+        <select id="locationSelect">
+          <option value="">-- Select Location --</option>
+        </select>
+        <button class="btn-small" onclick="addNewLocation()">+ Add</button>
+        <button class="btn-small" style="color: var(--danger);" onclick="removeCurrentLocation()">– Del</button>
+      </div>
+
+      <textarea id="shiftNotes" placeholder="Shift notes..."></textarea>
+
+      <button id="toggleBtn" class="btn btn-in" onclick="handlePunch()">Clock In</button>
     </div>
 
-    <!-- TAB 2: EXERCISE -->
-    <div id="tab2" class="tab-content">
-        <div class="card">
-            <h2>Today's Vitals</h2>
-            <div class="aligned-grid">
-                <div class="input-group"><label>Weight (lbs):</label><input type="number" id="daily-weight" placeholder="185" class="narrow-input"></div>
-                <div class="input-group"><label>Steps:</label><input type="number" id="daily-steps" placeholder="10000" class="narrow-input"></div>
-                <div class="input-group"><label>Bedtime:</label><input type="time" id="bedtime" class="narrow-input"></div>
-                <div class="input-group"><label>Wake Time:</label><input type="time" id="waketime" class="narrow-input"></div>
-            </div>
-            <button class="action-btn btn-blue" onclick="saveVitals()">SAVE VITALS</button>
-        </div>
-        
-        <div class="card">
-            <h2>Routines</h2>
-            <button class="action-btn btn-blue">PULL</button>
-            <button class="action-btn btn-blue">PUSH</button>
-            <button class="action-btn btn-blue">WALK</button>
-        </div>
-
-        <div class="card" id="chest-press-container">
-            <h2>Chest Press</h2>
-            <div id="sets-container">
-                <div class="set-row"><span>Set 1</span><input type="number" placeholder="Wt"><input type="number" placeholder="Reps"><button class="btn-done" onclick="finishSet(this)">Done</button></div>
-                <div class="set-row"><span>Set 2</span><input type="number" placeholder="Wt"><input type="number" placeholder="Reps"><button class="btn-done" onclick="finishSet(this)">Done</button></div>
-                <div class="set-row"><span>Set 3</span><input type="number" placeholder="Wt"><input type="number" placeholder="Reps"><button class="btn-done" onclick="finishSet(this)">Done</button></div>
-            </div>
-            <button class="action-btn btn-blue" onclick="addSet()">+ Add Set</button>
-        </div>
+    <!-- TAB 2: SHIFT HISTORY -->
+    <div id="tabHistory" class="tab-content">
+      <div class="section-title">
+        <span>Shift History</span>
+        <button class="btn-add-shift" onclick="manuallyAddShift()" title="Add Shift">+</button>
+      </div>
+      <div id="shiftLogs"></div>
     </div>
 
-    <!-- TAB 3: PLANNER -->
-    <div id="tab3" class="tab-content">
-        <div class="card" id="top-five-container">
-            <h2>Today's Top Five</h2>
-            <div class="top-five-row"><input type="checkbox" class="t5-check"><input type="text" placeholder="1. "></div>
-            <div class="top-five-row"><input type="checkbox" class="t5-check"><input type="text" placeholder="2. "></div>
-            <div class="top-five-row"><input type="checkbox" class="t5-check"><input type="text" placeholder="3. "></div>
-            <div class="top-five-row"><input type="checkbox" class="t5-check"><input type="text" placeholder="4. "></div>
-            <div class="top-five-row"><input type="checkbox" class="t5-check"><input type="text" placeholder="5. "></div>
-        </div>
-        <div class="card">
-            <h2>Appointments & Notes</h2>
-            <textarea id="plan-notes" placeholder="Jot down meetings, times, and general notes here..."></textarea>
-        </div>
-        <div class="card">
-            <h2>Must Contact Today</h2>
-            <textarea id="plan-contact" placeholder="Calls, emails, or texts to send today..." style="min-height: 80px;"></textarea>
-        </div>
-        <div class="card">
-            <h2>Coming Up</h2>
-            <textarea id="plan-future" placeholder="Next week, next month, future plans..." style="min-height: 80px;"></textarea>
-        </div>
-        
-        <div class="card">
-            <h2>Good News / Bonus (+5 pts)</h2>
-            <input type="text" id="plan-bonus" placeholder="Did you achieve something special today?">
-        </div>
+    <!-- TAB 3: SUMMARY -->
+    <div id="tabSummary" class="tab-content">
+      <div class="section-title">
+        <span>Current Week</span>
+      </div>
 
-        <button class="action-btn btn-yellow" onclick="savePlanner()">SAVE PLANNER</button>
+      <div class="breakdown-card">
+        <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.85rem; color: var(--subtext);">HOURS BY LOCATION (CURRENT WEEK)</div>
+        <div id="currentLocationBreakdown"></div>
+      </div>
+
+      <div class="breakdown-card">
+        <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.85rem; color: var(--subtext);">DAILY BREAKDOWN (CURRENT WEEK)</div>
+        <div id="currentDailyBreakdown"></div>
+      </div>
+
+      <!-- PREVIOUS WEEK SECTION -->
+      <div class="section-title" style="margin-top: 24px;">
+        <span>Previous Week</span>
+      </div>
+
+      <div class="breakdown-card">
+        <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.85rem; color: var(--subtext);">HOURS BY LOCATION (PREVIOUS WEEK)</div>
+        <div id="prevLocationBreakdown"></div>
+      </div>
+
+      <div class="breakdown-card">
+        <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.85rem; color: var(--subtext);">DAILY BREAKDOWN (PREVIOUS WEEK)</div>
+        <div id="prevDailyBreakdown"></div>
+      </div>
     </div>
 
-    <!-- TAB 4: NUTRITION -->
-    <div id="tab4" class="tab-content">
-        <div class="card">
-            <h2>Add Meal / Item</h2>
-            <div class="compact-row">
-                <div>
-                    <label>Meal Time:</label>
-                    <select id="meal-time">
-                        <option value="morning">Morning</option>
-                        <option value="lunch">Lunch</option>
-                        <option value="dinner">Dinner</option>
-                    </select>
-                </div>
-                <div style="flex: 2;">
-                    <label>Quick Add Saved Items:</label>
-                    <select id="saved-meals" onchange="loadSavedMeal()">
-                        <option value="">-- Select a saved item --</option>
-                        <option value="coffee">Morning Coffee</option>
-                        <option value="chicken">4oz Chicken Breast</option>
-                    </select>
-                </div>
-            </div>
+  </div>
 
-            <input type="text" id="f-name" placeholder="Food Name (e.g., Chili)">
-            <div class="nutrition-grid">
-                <div><label>Cals</label><input type="number" id="f-cals" placeholder="0"></div>
-                <div><label>Tot Fat</label><input type="number" id="f-fat" placeholder="0"></div>
-                <div><label>Sat Fat</label><input type="number" id="f-satfat" placeholder="0"></div>
-                <div><label>Chol</label><input type="number" id="f-chol" placeholder="0"></div>
-                <div><label>Sod</label><input type="number" id="f-sod" placeholder="0"></div>
-                <div><label>Carbs</label><input type="number" id="f-carbs" placeholder="0"></div>
-                <div><label>Fiber</label><input type="number" id="f-fiber" placeholder="0"></div>
-                <div><label>Sugars</label><input type="number" id="f-sugar" placeholder="0"></div>
-                <div><label>Protein</label><input type="number" id="f-pro" placeholder="0"></div>
-            </div>
-            
-            <div>
-                <button class="action-btn btn-green" onclick="logFood()">LOG FOOD</button>
-                <button class="action-btn btn-green" onclick="alert('Barcode API will open camera here')">SCAN BARCODE</button>
-            </div>
-        </div>
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" onclick="switchTab('tabPunch', this)">
+      <span class="tab-icon">⏱️</span>
+      <span>Clock</span>
+    </button>
+    <button class="nav-tab" onclick="switchTab('tabHistory', this)">
+      <span class="tab-icon">📋</span>
+      <span>History</span>
+    </button>
+    <button class="nav-tab" onclick="switchTab('tabSummary', this)">
+      <span class="tab-icon">📊</span>
+      <span>Summary</span>
+    </button>
+  </nav>
 
-        <div class="card">
-            <h2>Today's Meals</h2>
-            <h3 class="meal-header">Morning</h3><ul id="list-morning" class="meal-list"></ul>
-            <h3 class="meal-header">Lunch</h3><ul id="list-lunch" class="meal-list"></ul>
-            <h3 class="meal-header">Dinner</h3><ul id="list-dinner" class="meal-list"></ul>
-        </div>
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal" onclick="overlayClick(event)">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Settings & Exports</h3>
+        <button class="btn-icon" onclick="closeSettings()">✕</button>
+      </div>
 
-        <div class="card">
-            <h2>Today's Intake</h2>
-            <div class="intake-list">
-                <p><span>Calories</span> <span><b id="d-cals">0</b> / <span id="dt-cals">2000</span> <span class="dv-percent" id="p-cals">(0%)</span></span></p>
-                <p><span>Total Fat</span> <span><b id="d-fat">0</b>g / <span id="dt-fat">65</span>g <span class="dv-percent" id="p-fat">(0%)</span></span></p>
-                <p><span>Saturated Fat</span> <span><b id="d-satfat">0</b>g / <span id="dt-satfat">20</span>g <span class="dv-percent" id="p-satfat">(0%)</span></span></p>
-                <p><span>Cholesterol</span> <span><b id="d-chol">0</b>mg / <span id="dt-chol">300</span>mg <span class="dv-percent" id="p-chol">(0%)</span></span></p>
-                <p><span>Sodium</span> <span><b id="d-sod">0</b>mg / <span id="dt-sod">2300</span>mg <span class="dv-percent" id="p-sod">(0%)</span></span></p>
-                <p><span>Total Carbs</span> <span><b id="d-carbs">0</b>g / <span id="dt-carbs">200</span>g <span class="dv-percent" id="p-carbs">(0%)</span></span></p>
-                <p><span>Dietary Fiber</span> <span><b id="d-fiber">0</b>g / <span id="dt-fiber">28</span>g <span class="dv-percent" id="p-fiber">(0%)</span></span></p>
-                <p><span>Sugars</span> <span><b id="d-sugar">0</b>g / <span id="dt-sugar">50</span>g <span class="dv-percent" id="p-sugar">(0%)</span></span></p>
-                <p><span>Protein</span> <span><b id="d-pro">0</b>g / <span id="dt-pro">150</span>g <span class="dv-percent" id="p-pro">(0%)</span></span></p>
-            </div>
+      <div style="margin-bottom: 16px;">
+        <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 10px;">Google Drive Sync</div>
+        <button class="btn-action-wide" style="border-color: #2196f3; color: #2196f3;" onclick="manualSyncToDrive()">☁️ Sync Last Week to Google Drive</button>
+
+        <div style="font-weight: 600; font-size: 0.9rem; margin-top: 14px; margin-bottom: 10px;">Local Exports & Backup</div>
+        <button class="btn-action-wide" onclick="exportCSV('current')">Export Current Week (CSV)</button>
+        <button class="btn-action-wide" onclick="exportCSV('prev')">Export Previous Week (CSV)</button>
+        <button class="btn-action-wide" onclick="exportCSV('all')">Export Full History (CSV)</button>
+        <button class="btn-action-wide" style="border-color: #2196f3; color: #2196f3;" onclick="exportArchivedWeeks()">📥 Download Archived Weeks</button>
+        <button class="btn-action-wide" style="border-color: #552222; color: #ff8888;" onclick="archiveAndClear()">Archive & Clear History</button>
+      </div>
+
+      <div class="modal-header" style="margin-top: 10px;">
+        <h3>Preferences</h3>
+      </div>
+
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">Display Mode</div>
+          <div class="setting-desc">Choose app appearance</div>
         </div>
+        <select id="themeSelect" onchange="updateTheme(this.value)" style="width: auto; padding: 6px 10px;">
+          <option value="dark">High-Contrast Dark</option>
+          <option value="pure-black">AMOLED Pure Black</option>
+          <option value="white">White</option>
+          <option value="system">System Default</option>
+        </select>
+      </div>
+
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">Decimal Hours Display</div>
+          <div class="setting-desc">Show 7.75 hrs instead of 7h 45m</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="decimalToggle" onchange="toggleSetting('showDecimal', this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">Notification Shade Timer</div>
+          <div class="setting-desc">Live timer in pull-down tray</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="notificationToggle" onchange="toggleSetting('enableNotification', this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">4-Hour Clock Out Reminder</div>
+          <div class="setting-desc">Alerts: "Clock Out?" after 4 hours</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="reminderToggle" onchange="toggleSetting('fourHourReminder', this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">Confirm Clock Out</div>
+          <div class="setting-desc">Prompts to prevent accidental taps</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="confirmToggle" onchange="toggleSetting('confirmClockOut', this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <!-- README LINK -->
+      <div style="margin-top: 20px;">
+        <a href="README.html" class="btn-action-wide" style="border-color: var(--primary); color: var(--primary);">
+          📖 View Build History & README
+        </a>
+      </div>
     </div>
+  </div>
 
-    <!-- TAB 5: TOTALS DASHBOARD -->
-    <div id="tab5" class="tab-content">
-        <div class="card score-display">
-            <h2>Total Daily Score</h2>
-            <h1 id="master-score">0 <span>pts</span></h1>
-            <button class="action-btn btn-purple" onclick="syncDayToCloud()" style="margin-top: 15px;">FINISH DAY & SYNC</button>
-        </div>
+  <script>
+    const GOOGLE_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwhPGzIGY-fNPB9orI_bf4cQPuwY08gZtsIapMGlTAa7UBKHZtz_uATmwuYnYBxtBfyuA/exec";
 
-        <div class="card">
-            <h2 style="border-bottom-color: #8B0000;">Spirit Summary</h2>
-            <p><strong>Journal Sentences:</strong> <span id="dash-journal">0</span></p>
-            <p><strong>Fasting Logged:</strong> <span id="dash-fast">None</span></p>
-        </div>
+    let swRegistration = null;
 
-        <div class="card">
-            <h2 style="border-bottom-color: #1e3a8a;">Exercise Summary</h2>
-            <p><strong>Vitals Logged:</strong> <span id="dash-vitals">No</span></p>
-            <p><strong>Exercise Sets Completed:</strong> <span id="dash-sets">0</span></p>
-        </div>
-
-        <div class="card">
-            <h2 style="border-bottom-color: #b8860b;">Planner Summary</h2>
-            <p><strong>Top Five Completed:</strong> <span id="dash-top5">0</span> / 5</p>
-            <p><strong>Good News Bonus:</strong> <span id="dash-bonus">No</span></p>
-        </div>
-
-        <div class="card">
-            <h2 style="border-bottom-color: #1b5e20;">Nutrition Summary</h2>
-            <p><strong>Calorie Goal:</strong> <span id="dash-cal-status">0%</span></p>
-            <p><strong>Protein Goal:</strong> <span id="dash-pro-status">0%</span></p>
-        </div>
-    </div>
-
-    <!-- TAB 6: NOTES & CALENDAR -->
-    <div id="tab6" class="tab-content">
-        <div class="card">
-            <h2>Free-Form Notes (S-Pen Friendly)</h2>
-            <textarea id="freeform-notes" placeholder="Jot down quick thoughts, write with your S-Pen, or type freely here..."></textarea>
-            <button class="action-btn btn-orange" onclick="saveNotes()">SAVE NOTES</button>
-        </div>
-
-        <div class="card">
-            <h2 id="calendar-title-month">Calendar</h2>
-            <p style="color: #aaa; font-size: 0.9rem; margin-top: 0;">Tap any date to load or edit that day's log:</p>
-            <div class="calendar-grid">
-                <div class="cal-header">Sun</div><div class="cal-header">Mon</div><div class="cal-header">Tue</div><div class="cal-header">Wed</div><div class="cal-header">Thu</div><div class="cal-header">Fri</div><div class="cal-header">Sat</div>
-            </div>
-            <div id="calendar-days-grid" class="calendar-grid"></div>
-        </div>
-
-        <!-- Google Calendar 1 Embed -->
-        <div class="card">
-            <h2>Calendar 1</h2>
-            <iframe class="gcal-container" src="<iframe src="https://calendar.google.com/calendar/embed?src=heyjohnbeyer%40gmail.com&ctz=America%2FNew_York" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>"></iframe>
-        </div>
-
-        <!-- Google Calendar 2 Embed -->
-        <div class="card">
-            <h2>Calendar 2</h2>
-            <iframe class="gcal-container" src="<iframe src="https://calendar.google.com/calendar/embed?src=john%40eastcoastvalet.com&ctz=America%2FNew_York" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>"></iframe>
-        </div>
-    </div>
-
-    <div id="rest-timer-bar">Rest: <span id="timer-display">40</span>s</div>
-
-    <script>
-        let globalDailyScore = 0;
-        function addPoints(points) {
-            globalDailyScore += points;
-            document.getElementById('master-score').innerHTML = `${globalDailyScore} <span>pts</span>`;
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        swRegistration = reg;
+      });
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data && event.data.action === 'trigger_clock_out') {
+          if (activeShift) handlePunch();
         }
+      });
+    }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            document.getElementById('nav-' + tabId).classList.add('active');
+    let appSettings = JSON.parse(localStorage.getItem('appSettings')) || {
+      theme: 'dark',
+      showDecimal: true,
+      enableNotification: true,
+      fourHourReminder: true,
+      confirmClockOut: false
+    };
+
+    let activeShift = JSON.parse(localStorage.getItem('activeShift')) || null;
+    let shiftHistory = JSON.parse(localStorage.getItem('shiftHistory')) || [];
+    let savedLocations = JSON.parse(localStorage.getItem('savedLocations')) || [];
+    let interval = null;
+    let reminderFired = false;
+
+    function switchTab(tabId, el) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      if (el) el.classList.add('active');
+
+      if (tabId === 'tabHistory') renderHistory();
+      if (tabId === 'tabSummary') renderSummary();
+    }
+
+    function saveSettings() {
+      localStorage.setItem('appSettings', JSON.stringify(appSettings));
+    }
+
+    function applyTheme() {
+      document.body.setAttribute('data-theme', appSettings.theme || 'dark');
+      const meta = document.getElementById('metaThemeColor');
+      if (appSettings.theme === 'pure-black') meta.setAttribute('content', '#000000');
+      else if (appSettings.theme === 'white') meta.setAttribute('content', '#ffffff');
+      else meta.setAttribute('content', '#121212');
+    }
+
+    function openSettings() {
+      document.getElementById('themeSelect').value = appSettings.theme;
+      document.getElementById('decimalToggle').checked = appSettings.showDecimal;
+      document.getElementById('notificationToggle').checked = appSettings.enableNotification;
+      document.getElementById('reminderToggle').checked = appSettings.fourHourReminder;
+      document.getElementById('confirmToggle').checked = appSettings.confirmClockOut;
+      document.getElementById('settingsModal').style.display = 'flex';
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').style.display = 'none';
+      renderHistory();
+      renderSummary();
+      calculateWeekHours();
+    }
+
+    function overlayClick(e) {
+      if (e.target.id === 'settingsModal') closeSettings();
+    }
+
+    function updateTheme(val) {
+      appSettings.theme = val;
+      saveSettings();
+      applyTheme();
+    }
+
+    function toggleSetting(key, val) {
+      appSettings[key] = val;
+      saveSettings();
+      if (key === 'enableNotification' && !val) {
+        updateNotification("");
+      }
+    }
+
+    function roundTo10Minutes(ms) {
+      const ms10 = 10 * 60 * 1000;
+      return Math.round(ms / ms10) * ms10;
+    }
+
+    function roundUpTo10(timestamp) {
+      const ms10 = 10 * 60 * 1000;
+      return Math.ceil(timestamp / ms10) * ms10;
+    }
+
+    function formatTime(ms) {
+      if (ms < 0) ms = 0;
+      const totalSec = Math.floor(ms / 1000);
+      const hrs = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+      const secs = String(totalSec % 60).padStart(2, '0');
+      return `${hrs}:${mins}:${secs}`;
+    }
+
+    function formatStandardDuration(ms) {
+      if (ms < 0) ms = 0;
+      const roundedMs = roundTo10Minutes(ms);
+      const totalSec = Math.floor(roundedMs / 1000);
+      const hrs = Math.floor(totalSec / 3600);
+      const mins = Math.floor((totalSec % 3600) / 60);
+      return `${hrs}h ${mins}m`;
+    }
+
+    function formatDayDate(dateObj) {
+      return dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    }
+
+    function parseCustomDate(inputStr, fallbackObj) {
+      if (!inputStr) return fallbackObj;
+      let s = inputStr.trim();
+
+      s = s.replace(/^(monday|tuesday|wednesday|thursday|friday|saturday|sunday),?\s*/i, '');
+
+      if (s.includes('/')) {
+        const parts = s.split('/');
+        if (parts.length >= 2) {
+          const m = parseInt(parts[0], 10) - 1;
+          const d = parseInt(parts[1], 10);
+          const y = parts.length === 3 ? parseInt(parts[2], 10) : fallbackObj.getFullYear();
+          const parsed = new Date(y, m, d);
+          if (!isNaN(parsed.getTime())) return parsed;
         }
+      }
 
-        function playBeep() {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            if (!AudioContext) return;
-            const ctx = new AudioContext();
-            const osc = ctx.createOscillator();
-            osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime);
-            osc.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.5);
+      if (!/\d{4}/.test(s)) {
+        s = `${s}, ${fallbackObj.getFullYear()}`;
+      }
+
+      const parsed = new Date(s);
+      return isNaN(parsed.getTime()) ? fallbackObj : parsed;
+    }
+
+    function getFormattedEntryDate(shift) {
+      if (shift.inTimestamp) {
+        return formatDayDate(new Date(shift.inTimestamp));
+      }
+      if (shift.date) {
+        if (shift.date.includes('/')) {
+          const parts = shift.date.split('/');
+          if (parts.length === 3) {
+            const m = parseInt(parts[0], 10) - 1;
+            const d = parseInt(parts[1], 10);
+            const y = parseInt(parts[2], 10);
+            return formatDayDate(new Date(y, m, d));
+          }
         }
-
-        let timerInterval;
-        function startTimer() {
-            clearInterval(timerInterval);
-            let timeLeft = 40;
-            const timerBar = document.getElementById('rest-timer-bar');
-            const display = document.getElementById('timer-display');
-            timerBar.style.display = 'block';
-            display.innerText = timeLeft;
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                display.innerText = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    timerBar.style.display = 'none';
-                    playBeep();
-                }
-            }, 1000);
+        const parsed = new Date(shift.date);
+        if (!isNaN(parsed.getTime())) {
+          return formatDayDate(parsed);
         }
+        return shift.date;
+      }
+      return '';
+    }
 
-        let totalSets = 3;
-        let setsCompleted = 0;
-        function addSet() {
-            totalSets++;
-            const container = document.getElementById('sets-container');
-            const newSet = document.createElement('div');
-            newSet.className = 'set-row';
-            newSet.innerHTML = `<span>Set ${totalSets}</span><input type="number" placeholder="Wt"><input type="number" placeholder="Reps"><button class="btn-done" onclick="finishSet(this)">Done</button>`;
-            container.appendChild(newSet);
+    function formatTime12(dateObj) {
+      return dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+    }
+
+    function parseTime12Input(rawInput, baseDateObj) {
+      if (!rawInput) return null;
+      let s = rawInput.trim().toLowerCase().replace(/\s+/g, '');
+
+      let ampm = null;
+      if (s.endsWith('am')) { ampm = 'am'; s = s.slice(0, -2); }
+      else if (s.endsWith('pm')) { ampm = 'pm'; s = s.slice(0, -2); }
+      else if (s.endsWith('a')) { ampm = 'am'; s = s.slice(0, -1); }
+      else if (s.endsWith('p')) { ampm = 'pm'; s = s.slice(0, -1); }
+
+      let hours = null;
+      let mins = 0;
+
+      if (s.includes(':')) {
+        const parts = s.split(':');
+        if (parts.length === 2) {
+          hours = parseInt(parts[0], 10);
+          mins = parseInt(parts[1], 10);
         }
-
-        function finishSet(btn) {
-            btn.classList.add('completed'); btn.innerText = 'Completed'; btn.disabled = true;
-            setsCompleted++;
-            document.getElementById('dash-sets').innerText = setsCompleted;
-            addPoints(1); 
-            const all = document.querySelectorAll('#sets-container .set-row');
-            if (all[all.length - 1] !== btn.parentElement) startTimer();
+      } else if (/^\d+$/.test(s)) {
+        if (s.length === 1 || s.length === 2) {
+          hours = parseInt(s, 10);
+          mins = 0;
+        } else if (s.length === 3) {
+          hours = parseInt(s.substring(0, 1), 10);
+          mins = parseInt(s.substring(1), 10);
+        } else if (s.length === 4) {
+          hours = parseInt(s.substring(0, 2), 10);
+          mins = parseInt(s.substring(2), 10);
         }
+      }
 
-        function saveVitals() {
-            document.getElementById('dash-vitals').innerText = 'Yes';
-            addPoints(5);
-            alert('Vitals Saved! +5 points');
-        }
+      if (hours === null || isNaN(hours) || isNaN(mins) || mins < 0 || mins > 59) {
+        return null;
+      }
 
-        function saveMeditation() {
-            const text = document.getElementById('journal-entry').value;
-            const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
-            const pts = sentences.length * 3;
-            document.getElementById('dash-journal').innerText = sentences.length;
-            addPoints(pts);
-            alert(`Saved! You wrote ${sentences.length} sentences. +${pts} points.`);
-        }
+      if (ampm) {
+        if (hours < 1 || hours > 12) return null;
+        if (ampm === 'pm' && hours < 12) hours += 12;
+        if (ampm === 'am' && hours === 12) hours = 0;
+      } else {
+        if (hours < 0 || hours > 23) return null;
+      }
 
-        function logFast() {
-            document.getElementById('dash-fast').innerText = 'Logged';
-            addPoints(5);
-            alert('Fast Logged! +5 points.');
-        }
+      const d = new Date(baseDateObj);
+      d.setHours(hours, mins, 0, 0);
 
-        function savePlanner() {
-            let pts = 0;
-            const checkedBoxes = document.querySelectorAll('.t5-check:checked').length;
-            pts += (checkedBoxes * 2);
-            document.getElementById('dash-top5').innerText = checkedBoxes;
+      const roundedMs = roundUpTo10(d.getTime());
+      return new Date(roundedMs);
+    }
 
-            if (document.getElementById('plan-notes').value.trim() !== '') pts += 1;
-            if (document.getElementById('plan-contact').value.trim() !== '') pts += 1;
-            if (document.getElementById('plan-future').value.trim() !== '') pts += 1;
+    function matchLocationShortcut(inputStr) {
+      if (!inputStr) return "";
+      const s = inputStr.trim();
+      const lower = s.toLowerCase();
 
-            const bonusText = document.getElementById('plan-bonus').value.trim();
-            if (bonusText !== '') {
-                pts += 5;
-                document.getElementById('dash-bonus').innerText = 'Yes (+5)';
-            } else {
-                document.getElementById('dash-bonus').innerText = 'No';
+      if (lower === 'pa') return "Palmetto Place";
+      if (lower === 'pr') return "Presidential Place";
+      if (lower === 'h') return "Home/Office";
+      if (lower === 't') return "Tower 155";
+      if (lower === 'w') return "Waterview Towers";
+      if (lower === 'm') return "Mizner Tower";
+
+      const directMatch = savedLocations.find(loc => loc.toLowerCase().startsWith(lower));
+      if (directMatch) return directMatch;
+
+      return s;
+    }
+
+    function getMondayStart(d) {
+      const date = new Date(d);
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+      const mon = new Date(date.setDate(diff));
+      mon.setHours(0, 0, 0, 0);
+      return mon;
+    }
+
+    function getAllShiftsPool() {
+      let pool = [...shiftHistory];
+      const archivedWeeks = JSON.parse(localStorage.getItem('archivedWeeks') || '[]');
+      archivedWeeks.forEach(week => {
+        if (Array.isArray(week.shifts)) {
+          week.shifts.forEach(s => {
+            if (!pool.some(item => item.id === s.id)) {
+              pool.push(s);
             }
-
-            addPoints(pts);
-            alert(`Planner Saved! You earned +${pts} points.`);
+          });
         }
+      });
+      return pool;
+    }
 
-        function saveNotes() {
-            alert('Notes Saved locally!');
-        }
+    function generateCSVString(shiftsArray) {
+      let csv = "Date,Location,Clock In,Clock Out,Duration,Decimal Hours,Notes\n";
+      
+      // Sort chronologically: Monday through Sunday, and earliest start time to latest
+      const sortedShifts = [...shiftsArray].sort((a, b) => (a.inTimestamp || 0) - (b.inTimestamp || 0));
 
-        async function syncDayToCloud() {
-            if (!window.database) {
-                alert("Database not connected yet.");
-                return;
-            }
-            try {
-                const targetKey = window.currentSelectedDate || getLocalTodayStr();
-                const payload = {
-                    score: globalDailyScore,
-                    weight: document.getElementById('daily-weight').value,
-                    steps: document.getElementById('daily-steps').value,
-                    journal: document.getElementById('journal-entry').value,
-                    notes: document.getElementById('freeform-notes').value,
-                    timestamp: Date.now()
-                };
+      sortedShifts.forEach(s => {
+        const entryDate = getFormattedEntryDate(s);
+        const rawDiff = s.outTimestamp - s.inTimestamp;
+        const roundedDiff = roundTo10Minutes(rawDiff);
+        const decHours = (roundedDiff / (1000 * 60 * 60)).toFixed(2);
+        csv += `"${entryDate}","${(s.location || '').replace(/"/g, '""')}","${s.in}","${s.out}","${formatTime(roundedDiff)}","${decHours}","${(s.note || '').replace(/"/g, '""')}"\n`;
+      });
+      return csv;
+    }
 
-                await window.dbSet(window.dbRef(window.database, 'days/' + targetKey), payload);
-                alert(`Success! Data for ${targetKey} has been synced to the cloud.`);
-            } catch (error) {
-                console.error(error);
-                alert("Sync failed. Check console for details.");
-            }
-        }
+    async function uploadCSVToDrive(filename, csvContent) {
+      if (!GOOGLE_SCRIPT_WEB_APP_URL) return false;
+      try {
+        await fetch(GOOGLE_SCRIPT_WEB_APP_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ filename, csvContent })
+        });
+        return true;
+      } catch (err) {
+        console.error("Drive upload failed:", err);
+        return false;
+      }
+    }
 
-        const targets = { cals: 2000, fat: 65, satfat: 20, chol: 300, sod: 2300, carbs: 200, fiber: 28, sugar: 50, pro: 150 };
-        const daily = { cals: 0, fat: 0, satfat: 0, chol: 0, sod: 0, carbs: 0, fiber: 0, sugar: 0, pro: 0 };
-        const keys = Object.keys(daily);
+    async function checkSundayMidnightArchive() {
+      const now = new Date();
+      const currentMonStart = getMondayStart(now).getTime();
+      const lastArchivedMon = parseInt(localStorage.getItem('lastArchivedMon') || '0', 10);
 
-        function updateUI() {
-            keys.forEach(k => {
-                const target = targets[k]; 
-                document.getElementById(`dt-${k}`).innerText = target;
-                document.getElementById(`d-${k}`).innerText = daily[k];
-                const pct = Math.round((daily[k] / target) * 100);
-                document.getElementById(`p-${k}`).innerText = `(${pct}%)`;
-                
-                if (k === 'cals') document.getElementById('dash-cal-status').innerText = `${pct}%`;
-                if (k === 'pro') document.getElementById('dash-pro-status').innerText = `${pct}%`;
+      if (lastArchivedMon !== 0 && currentMonStart > lastArchivedMon) {
+        const pastWeekShifts = shiftHistory.filter(s => s.inTimestamp < currentMonStart);
+        if (pastWeekShifts.length > 0) {
+          let archivedWeeks = JSON.parse(localStorage.getItem('archivedWeeks') || '[]');
+          if (!archivedWeeks.some(w => w.weekStart === lastArchivedMon)) {
+            archivedWeeks.push({
+              archivedAt: new Date().toISOString(),
+              weekStart: lastArchivedMon,
+              shifts: pastWeekShifts
             });
+            localStorage.setItem('archivedWeeks', JSON.stringify(archivedWeeks));
+
+            // Automatic upload to Google Drive
+            const prevMonDate = new Date(lastArchivedMon);
+            const prevSunDate = new Date(lastArchivedMon + (6 * 24 * 60 * 60 * 1000));
+            const fname = `Work_Week_${prevMonDate.toISOString().slice(0,10)}_to_${prevSunDate.toISOString().slice(0,10)}`;
+            const csvData = generateCSVString(pastWeekShifts);
+            uploadCSVToDrive(fname, csvData);
+          }
         }
+      }
+      localStorage.setItem('lastArchivedMon', currentMonStart.toString());
+    }
 
-        function loadSavedMeal() {
-            const meal = document.getElementById('saved-meals').value;
-            const setVals = (n, c, f, sf, ch, so, ca, fi, su, p) => {
-                document.getElementById('f-name').value = n;
-                document.getElementById('f-cals').value = c; document.getElementById('f-fat').value = f;
-                document.getElementById('f-satfat').value = sf; document.getElementById('f-chol').value = ch;
-                document.getElementById('f-sod').value = so; document.getElementById('f-carbs').value = ca;
-                document.getElementById('f-fiber').value = fi; document.getElementById('f-sugar').value = su;
-                document.getElementById('f-pro').value = p;
-            };
+    async function manualSyncToDrive() {
+      const now = new Date();
+      const currentMonStart = getMondayStart(now).getTime();
+      const prevMonStart = currentMonStart - (7 * 24 * 60 * 60 * 1000);
+      const allShifts = getAllShiftsPool();
+      const prevShifts = allShifts.filter(s => s.inTimestamp >= prevMonStart && s.inTimestamp < currentMonStart);
 
-            if (meal === "coffee") setVals("Morning Coffee", 140, 4, 2, 10, 15, 22, 0, 20, 1);
-            else if (meal === "chicken") setVals("4oz Chicken Breast", 185, 4, 1, 95, 85, 0, 0, 0, 35);
-            else setVals("", "", "", "", "", "", "", "", "", "");
+      if (prevShifts.length === 0) {
+        return alert("No shifts found for the previous week to sync.");
+      }
+
+      const prevMonDate = new Date(prevMonStart);
+      const prevSunDate = new Date(prevMonStart + (6 * 24 * 60 * 60 * 1000));
+      const fname = `Work_Week_${prevMonDate.toISOString().slice(0,10)}_to_${prevSunDate.toISOString().slice(0,10)}`;
+      const csvData = generateCSVString(prevShifts);
+
+      alert("Sending previous week's spreadsheet to Google Drive...");
+      await uploadCSVToDrive(fname, csvData);
+      alert("Report sent! Check your Google Drive folder.");
+    }
+
+    function initLocations() {
+      const select = document.getElementById('locationSelect');
+      savedLocations = savedLocations.filter(loc => loc !== 'Headquarters' && loc !== 'Field');
+
+      const defaults = ["Home/Office", "Palmetto Place", "Presidential Place", "Tower 155", "Waterview Towers", "Mizner Tower"];
+      defaults.forEach(d => {
+        if (!savedLocations.includes(d)) savedLocations.push(d);
+      });
+
+      localStorage.setItem('savedLocations', JSON.stringify(savedLocations));
+
+      select.innerHTML = '<option value="">-- Select Location --</option>';
+      savedLocations.forEach(loc => {
+        const opt = document.createElement('option');
+        opt.value = loc;
+        opt.innerText = loc;
+        select.appendChild(opt);
+      });
+    }
+
+    function addNewLocation() {
+      const name = prompt("Enter new location/site name:");
+      if (name && name.trim()) {
+        const clean = name.trim();
+        if (!savedLocations.includes(clean)) {
+          savedLocations.push(clean);
+          localStorage.setItem('savedLocations', JSON.stringify(savedLocations));
+          initLocations();
         }
+        document.getElementById('locationSelect').value = clean;
+      }
+    }
 
-        function logFood() {
-            let loggedAny = false;
-            let foodName = document.getElementById('f-name').value || "Custom Item";
-            let mealTime = document.getElementById('meal-time').value;
-            let addedCals = parseInt(document.getElementById('f-cals').value) || 0;
+    function removeCurrentLocation() {
+      const select = document.getElementById('locationSelect');
+      const selected = select.value;
+      if (!selected) {
+        alert("Please choose a location from the dropdown first to delete it.");
+        return;
+      }
+      if (confirm(`Delete "${selected}" from your saved locations list?`)) {
+        savedLocations = savedLocations.filter(loc => loc !== selected);
+        localStorage.setItem('savedLocations', JSON.stringify(savedLocations));
+        initLocations();
+      }
+    }
 
-            keys.forEach(k => {
-                const val = parseInt(document.getElementById(`f-${k}`).value) || 0;
-                if (val > 0) loggedAny = true;
-                daily[k] += val;
-                document.getElementById(`f-${k}`).value = ''; 
+    function calculateWeekHours() {
+      const now = new Date();
+      const monStart = getMondayStart(now);
+      const sunEnd = new Date(monStart);
+      sunEnd.setDate(sunEnd.getDate() + 6);
+      sunEnd.setHours(23, 59, 59, 999);
+
+      document.getElementById('currentDateDisplay').innerText = formatDayDate(now);
+      document.getElementById('weekRangeLabel').innerText = 
+        `${monStart.toLocaleDateString([], {month:'numeric', day:'numeric'})} - ${sunEnd.toLocaleDateString([], {month:'numeric', day:'numeric'})}`;
+
+      let totalMs = 0;
+      shiftHistory.forEach(s => {
+        if (s.inTimestamp >= monStart.getTime() && s.inTimestamp <= sunEnd.getTime()) {
+          const shiftDuration = s.outTimestamp - s.inTimestamp;
+          totalMs += roundTo10Minutes(shiftDuration);
+        }
+      });
+
+      if (activeShift) {
+        const rawLiveMs = Math.max(0, Date.now() - (activeShift.rawStart || activeShift.inTime));
+        totalMs += roundTo10Minutes(rawLiveMs);
+      }
+
+      const val = appSettings.showDecimal ? `${(totalMs / (1000 * 60 * 60)).toFixed(2)} hrs` : formatStandardDuration(totalMs);
+      document.getElementById('weekHoursDisplay').innerText = val;
+    }
+
+    async function checkFourHourReminder(diffMs) {
+      if (!appSettings.fourHourReminder || reminderFired) return;
+      if (diffMs >= 14400000) {
+        reminderFired = true;
+        if ('Notification' in window && Notification.permission === 'granted') {
+          const reg = swRegistration || await navigator.serviceWorker.ready;
+          if (reg) {
+            reg.showNotification("Clock Out?", {
+              body: "You have been clocked in for 4 hours.",
+              tag: 'four-hour-reminder',
+              icon: 'https://cdn-icons-png.flaticon.com/512/2972/2972531.png',
+              requireInteraction: true,
+              actions: [ { action: 'clock_out', title: 'Clock Out' } ]
             });
-            
-            if (!loggedAny) {
-                alert("Please enter at least one nutritional value."); return;
-            }
+          }
+        }
+      }
+    }
 
-            let ul = document.getElementById(`list-${mealTime}`);
-            let li = document.createElement('li');
-            li.innerHTML = `<span><strong>${foodName}</strong></span> <span>${addedCals} Cals</span>`;
-            ul.appendChild(li);
+    async function updateNotification(durationStr) {
+      if (!appSettings.enableNotification) return;
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      const reg = swRegistration || await navigator.serviceWorker.ready;
+      if (!reg) return;
 
-            document.getElementById('f-name').value = '';
-            document.getElementById('saved-meals').value = '';
-            updateUI();
+      if (activeShift) {
+        const inStr = formatTime12(new Date(activeShift.inTime));
+        const loc = activeShift.location ? ` • ${activeShift.location}` : '';
+        reg.showNotification(`Time Tracker: ${durationStr}`, {
+          body: `Clocked In at ${inStr}${loc}\nTap to open app`,
+          tag: 'active-shift-timer',
+          renotify: false,
+          silent: true,
+          requireInteraction: true,
+          icon: 'https://cdn-icons-png.flaticon.com/512/2972/2972531.png',
+          actions: [ { action: 'clock_out', title: 'Clock Out' } ]
+        });
+      } else {
+        const notifs = await reg.getNotifications({ tag: 'active-shift-timer' });
+        notifs.forEach(n => n.close());
+      }
+    }
+
+    function updateUI() {
+      const statusLabel = document.getElementById('statusLabel');
+      const inTimeDisplay = document.getElementById('inTimeDisplay');
+      const editActiveInBtn = document.getElementById('editActiveInBtn');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const notesField = document.getElementById('shiftNotes');
+      const locSelect = document.getElementById('locationSelect');
+
+      if (activeShift) {
+        statusLabel.innerText = "STATUS: CLOCKED IN";
+        statusLabel.style.color = "var(--primary)";
+        inTimeDisplay.innerText = `In: ${formatTime12(new Date(activeShift.inTime))}`;
+        editActiveInBtn.style.display = "inline";
+        toggleBtn.innerText = "Clock Out";
+        toggleBtn.className = "btn btn-out";
+        if (activeShift.note) notesField.value = activeShift.note;
+        if (activeShift.location) locSelect.value = activeShift.location;
+      } else {
+        statusLabel.innerText = "STATUS: CLOCKED OUT";
+        statusLabel.style.color = "var(--subtext)";
+        inTimeDisplay.innerText = "Not clocked in";
+        editActiveInBtn.style.display = "none";
+        document.getElementById('timerDisplay').innerText = "00:00:00";
+        toggleBtn.innerText = "Clock In";
+        toggleBtn.className = "btn btn-in";
+        notesField.value = "";
+        reminderFired = false;
+        updateNotification("");
+      }
+      calculateWeekHours();
+    }
+
+    function startTimer() {
+      if (interval) clearInterval(interval);
+      if (activeShift) {
+        const startTime = activeShift.rawStart || activeShift.inTime;
+        interval = setInterval(() => {
+          const diff = Math.max(0, Date.now() - startTime);
+          const dur = formatTime(diff);
+          document.getElementById('timerDisplay').innerText = dur;
+          calculateWeekHours();
+          updateNotification(dur);
+          checkFourHourReminder(diff);
+        }, 1000);
+      }
+    }
+
+    function editActiveClockIn() {
+      if (!activeShift) return;
+      const currentIn = new Date(activeShift.inTime);
+      const promptVal = prompt("Edit Clock In time (e.g. 0917, 917a, 2117, 9:17 AM):", formatTime12(currentIn));
+      if (promptVal === null) return;
+
+      const newDate = parseTime12Input(promptVal, currentIn);
+      if (!newDate) {
+        alert("Invalid time format. Examples: 0917, 917a, 2117, 9:17 am");
+        return;
+      }
+      activeShift.inTime = newDate.getTime();
+      activeShift.rawStart = newDate.getTime();
+      reminderFired = false;
+      localStorage.setItem('activeShift', JSON.stringify(activeShift));
+      updateUI();
+      startTimer();
+    }
+
+    async function handlePunch() {
+      const notesField = document.getElementById('shiftNotes');
+      const locSelect = document.getElementById('locationSelect');
+      const now = Date.now();
+
+      if (!activeShift) {
+        if ('Notification' in window && Notification.permission === 'default') {
+          await Notification.requestPermission();
+        }
+        activeShift = {
+          rawStart: now,
+          inTime: roundUpTo10(now),
+          note: notesField.value.trim(),
+          location: locSelect.value
+        };
+        reminderFired = false;
+        localStorage.setItem('activeShift', JSON.stringify(activeShift));
+        startTimer();
+      } else {
+        if (appSettings.confirmClockOut) {
+          if (!confirm("Are you sure you want to Clock Out?")) return;
         }
 
-        window.onload = updateUI;
-    </script>
+        let outTime = roundUpTo10(now);
+        if (outTime < activeShift.inTime) {
+          outTime = activeShift.inTime;
+        }
+
+        const rawDiff = Math.max(0, outTime - activeShift.inTime);
+        const totalDuration = roundTo10Minutes(rawDiff);
+        const inDate = new Date(activeShift.inTime);
+
+        const entry = {
+          id: Date.now().toString(),
+          inTimestamp: activeShift.inTime,
+          outTimestamp: outTime,
+          date: formatDayDate(inDate),
+          in: formatTime12(inDate),
+          out: formatTime12(new Date(outTime)),
+          duration: formatTime(totalDuration),
+          hoursDecimal: ((totalDuration) / (1000 * 60 * 60)).toFixed(2),
+          location: locSelect.value || activeShift.location || '',
+          note: notesField.value.trim()
+        };
+        shiftHistory.unshift(entry);
+        localStorage.setItem('shiftHistory', JSON.stringify(shiftHistory));
+        localStorage.removeItem('activeShift');
+        activeShift = null;
+        clearInterval(interval);
+      }
+      updateUI();
+      renderHistory();
+      renderSummary();
+    }
+
+    function manuallyAddShift() {
+      const today = new Date();
+      const defaultDateStr = formatDayDate(today);
+      const datePrompt = prompt("Shift Date (Press OK for today, or edit):", defaultDateStr);
+      if (datePrompt === null) return;
+      const baseDate = parseCustomDate(datePrompt, today);
+
+      const inPrompt = prompt("Clock In time (e.g. 0917, 917a, 2117, 9:17 am):");
+      if (inPrompt === null) return;
+      const parsedIn = parseTime12Input(inPrompt, baseDate);
+      if (!parsedIn) return alert("Invalid Clock In time format.");
+
+      const outPrompt = prompt("Clock Out time (e.g. 1700, 500p, 5:00 pm):");
+      if (outPrompt === null) return;
+      let parsedOut = parseTime12Input(outPrompt, baseDate);
+      if (!parsedOut) return alert("Invalid Clock Out time format.");
+
+      if (parsedOut.getTime() < parsedIn.getTime()) {
+        parsedOut.setDate(parsedOut.getDate() + 1);
+      }
+
+      const locInput = prompt("Location/Site shortcut or name:\n(h, pa, pr, t, w, m)", "");
+      if (locInput === null) return;
+      const resolvedLocation = matchLocationShortcut(locInput);
+
+      const notePrompt = prompt("Shift Notes (optional):", "");
+      if (notePrompt === null) return;
+
+      const rawDiff = parsedOut.getTime() - parsedIn.getTime();
+      const roundedDiff = roundTo10Minutes(rawDiff);
+
+      const entry = {
+        id: Date.now().toString(),
+        inTimestamp: parsedIn.getTime(),
+        outTimestamp: parsedOut.getTime(),
+        date: formatDayDate(parsedIn),
+        in: formatTime12(parsedIn),
+        out: formatTime12(parsedOut),
+        duration: formatTime(roundedDiff),
+        hoursDecimal: (roundedDiff / (1000 * 60 * 60)).toFixed(2),
+        location: resolvedLocation,
+        note: notePrompt.trim()
+      };
+
+      shiftHistory.push(entry);
+      localStorage.setItem('shiftHistory', JSON.stringify(shiftHistory));
+      renderHistory();
+      renderSummary();
+      calculateWeekHours();
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('shiftLogs');
+      if (!container) return;
+      if (shiftHistory.length === 0) {
+        container.innerHTML = `<div class="empty-state">No recorded shifts yet.</div>`;
+        return;
+      }
+
+      const sortedShifts = [...shiftHistory].sort((a, b) => b.inTimestamp - a.inTimestamp);
+
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+
+      container.innerHTML = sortedShifts.map(shift => {
+        const rawDiff = (shift.outTimestamp && shift.inTimestamp) ? (shift.outTimestamp - shift.inTimestamp) : 0;
+        const diffMs = roundTo10Minutes(rawDiff);
+
+        const timeDisplay = appSettings.showDecimal 
+          ? `${(diffMs / (1000 * 60 * 60)).toFixed(2)} hrs` 
+          : formatStandardDuration(diffMs);
+
+        const displayDate = getFormattedEntryDate(shift);
+        const isToday = shift.inTimestamp >= startOfToday.getTime() && shift.inTimestamp <= endOfToday.getTime();
+        const todayClass = isToday ? ' log-today' : '';
+
+        return `
+          <div class="log-item${todayClass}" id="item-${shift.id}">
+            <div class="log-top">
+              <span class="log-date">${displayDate}</span>
+              <span>${timeDisplay}</span>
+            </div>
+            <div class="log-sub">${shift.in} – ${shift.out}</div>
+            ${shift.location ? `<div class="log-tag">${shift.location}</div>` : ''}
+            ${shift.note ? `<div class="log-note">${shift.note}</div>` : ''}
+            <div class="log-actions">
+              <button class="action-btn action-edit" onclick="editShift('${shift.id}')">Edit</button>
+              <button class="action-btn action-del" onclick="deleteShift('${shift.id}')">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderSummary() {
+      const currentLocContainer = document.getElementById('currentLocationBreakdown');
+      const currentDayContainer = document.getElementById('currentDailyBreakdown');
+      const prevLocContainer = document.getElementById('prevLocationBreakdown');
+      const prevDayContainer = document.getElementById('prevDailyBreakdown');
+      if (!currentLocContainer || !currentDayContainer) return;
+
+      const now = new Date();
+      const currentMonStart = getMondayStart(now).getTime();
+      const currentSunEnd = currentMonStart + (7 * 24 * 60 * 60 * 1000) - 1;
+
+      const prevMonStart = currentMonStart - (7 * 24 * 60 * 60 * 1000);
+      const prevSunEnd = currentMonStart - 1;
+
+      const allShifts = getAllShiftsPool();
+
+      buildWeekBreakdown(allShifts, currentMonStart, currentSunEnd, true, currentLocContainer, currentDayContainer);
+      buildWeekBreakdown(allShifts, prevMonStart, prevSunEnd, false, prevLocContainer, prevDayContainer);
+    }
+
+    function buildWeekBreakdown(sourceShifts, monStart, sunEnd, includeActive, locContainer, dayContainer) {
+      const weekShifts = sourceShifts.filter(s => s.inTimestamp >= monStart && s.inTimestamp <= sunEnd);
+
+      const locMap = {};
+      let totalMs = 0;
+      weekShifts.forEach(s => {
+        const loc = s.location || 'Unassigned';
+        const ms = roundTo10Minutes(s.outTimestamp - s.inTimestamp);
+        locMap[loc] = (locMap[loc] || 0) + ms;
+        totalMs += ms;
+      });
+
+      if (includeActive && activeShift) {
+        const rawLiveMs = Math.max(0, Date.now() - (activeShift.rawStart || activeShift.inTime));
+        const loc = activeShift.location || 'Unassigned';
+        const ms = roundTo10Minutes(rawLiveMs);
+        locMap[loc] = (locMap[loc] || 0) + ms;
+        totalMs += ms;
+      }
+
+      const totalVal = appSettings.showDecimal ? `${(totalMs / (1000 * 60 * 60)).toFixed(2)} hrs` : formatStandardDuration(totalMs);
+
+      const locKeys = Object.keys(locMap);
+      if (locKeys.length === 0) {
+        locContainer.innerHTML = `<div style="color: var(--subtext); font-size: 0.85rem;">No activity recorded.</div>`;
+      } else {
+        locContainer.innerHTML = locKeys.map(k => {
+          const val = appSettings.showDecimal ? `${(locMap[k] / (1000 * 60 * 60)).toFixed(2)} hrs` : formatStandardDuration(locMap[k]);
+          return `<div class="breakdown-row"><span>${k}</span><span style="font-weight: 600;">${val}</span></div>`;
+        }).join('');
+      }
+
+      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      const dayMs = [0, 0, 0, 0, 0, 0, 0];
+
+      weekShifts.forEach(s => {
+        const d = new Date(s.inTimestamp).getDay();
+        const idx = (d === 0) ? 6 : d - 1;
+        dayMs[idx] += roundTo10Minutes(s.outTimestamp - s.inTimestamp);
+      });
+
+      if (includeActive && activeShift) {
+        const d = new Date(activeShift.inTime).getDay();
+        const idx = (d === 0) ? 6 : d - 1;
+        const rawLiveMs = Math.max(0, Date.now() - (activeShift.rawStart || activeShift.inTime));
+        dayMs[idx] += roundTo10Minutes(rawLiveMs);
+      }
+
+      let dailyHtml = days.map((dayName, i) => {
+        const val = appSettings.showDecimal ? `${(dayMs[i] / (1000 * 60 * 60)).toFixed(2)} hrs` : formatStandardDuration(dayMs[i]);
+        const style = dayMs[i] > 0 ? "font-weight: 600; color: var(--primary);" : "color: var(--subtext);";
+        return `<div class="breakdown-row"><span>${dayName}</span><span style="${style}">${val}</span></div>`;
+      }).join('');
+
+      dailyHtml += `
+        <div class="breakdown-row total-row">
+          <span>Total Week Hours</span>
+          <span style="color: var(--primary); font-weight: 700;">${totalVal}</span>
+        </div>
+      `;
+
+      dayContainer.innerHTML = dailyHtml;
+    }
+
+    function editShift(id) {
+      const s = shiftHistory.find(item => item.id === id);
+      if (!s) return;
+
+      const currentBaseDate = s.inTimestamp ? new Date(s.inTimestamp) : new Date();
+
+      const datePrompt = prompt("Shift Date (Press OK to keep, or edit):", formatDayDate(currentBaseDate));
+      if (datePrompt === null) return;
+      const baseDate = parseCustomDate(datePrompt, currentBaseDate);
+
+      const inDate = new Date(s.inTimestamp);
+      const outDate = new Date(s.outTimestamp);
+
+      const inPrompt = prompt("Clock In time (e.g. 0917, 917a, 2117, 9:17 AM):", formatTime12(inDate));
+      if (inPrompt === null) return;
+      const parsedIn = parseTime12Input(inPrompt, baseDate);
+      if (!parsedIn) return alert("Invalid In-Time format. Examples: 0917, 917a, 2117, 9:17 am");
+
+      const outPrompt = prompt("Clock Out time (e.g. 1700, 500p, 5:00 PM):", formatTime12(outDate));
+      if (outPrompt === null) return;
+      let parsedOut = parseTime12Input(outPrompt, baseDate);
+      if (!parsedOut) return alert("Invalid Out-Time format. Examples: 1700, 500p, 5:00 pm");
+
+      if (parsedOut.getTime() < parsedIn.getTime()) {
+        parsedOut.setDate(parsedOut.getDate() + 1);
+      }
+
+      const locPrompt = prompt("Location/Site shortcut or name:\n(h, pa, pr, t, w, m)", s.location || "");
+      if (locPrompt !== null) {
+        s.location = matchLocationShortcut(locPrompt);
+      }
+
+      const newNote = prompt("Notes:", s.note || "");
+      if (newNote !== null) s.note = newNote.trim();
+
+      s.inTimestamp = parsedIn.getTime();
+      s.outTimestamp = parsedOut.getTime();
+      s.date = formatDayDate(parsedIn);
+      s.in = formatTime12(parsedIn);
+      s.out = formatTime12(parsedOut);
+
+      const rawDiff = s.outTimestamp - s.inTimestamp;
+      const diff = roundTo10Minutes(rawDiff);
+      s.duration = formatTime(diff);
+      s.hoursDecimal = (diff / (1000 * 60 * 60)).toFixed(2);
+
+      localStorage.setItem('shiftHistory', JSON.stringify(shiftHistory));
+      renderHistory();
+      renderSummary();
+      calculateWeekHours();
+    }
+
+    function deleteShift(id) {
+      if (confirm("Are you sure you want to delete this shift entry?")) {
+        shiftHistory = shiftHistory.filter(item => item.id !== id);
+        localStorage.setItem('shiftHistory', JSON.stringify(shiftHistory));
+        renderHistory();
+        renderSummary();
+        calculateWeekHours();
+      }
+    }
+
+    function exportCSV(scope) {
+      let rows = shiftHistory;
+      let filename = "all_shifts";
+
+      const currentMonStart = getMondayStart(new Date()).getTime();
+
+      if (scope === 'current') {
+        rows = shiftHistory.filter(s => s.inTimestamp >= currentMonStart);
+        filename = "current_week_shifts";
+        if (rows.length === 0) return alert("No shifts logged for current week yet.");
+      } else if (scope === 'prev') {
+        const prevMonStart = currentMonStart - (7 * 24 * 60 * 60 * 1000);
+        const allShifts = getAllShiftsPool();
+        rows = allShifts.filter(s => s.inTimestamp >= prevMonStart && s.inTimestamp < currentMonStart);
+        filename = "previous_week_shifts";
+        if (rows.length === 0) return alert("No shifts logged for previous week.");
+      }
+
+      if (rows.length === 0) return alert("No shifts to export.");
+
+      const csv = generateCSVString(rows);
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', `${filename}_${new Date().toISOString().slice(0,10)}.csv`);
+      a.click();
+    }
+
+    function exportArchivedWeeks() {
+      const archives = JSON.parse(localStorage.getItem('archivedWeeks') || '[]');
+      if (archives.length === 0) {
+        alert("No archived weeks found in local storage on this device.");
+        return;
+      }
+
+      let allArchivedShifts = [];
+      archives.forEach(week => {
+        if (Array.isArray(week.shifts)) {
+          allArchivedShifts.push(...week.shifts);
+        }
+      });
+
+      if (allArchivedShifts.length === 0) {
+        alert("Archive vault is empty.");
+        return;
+      }
+
+      const csv = generateCSVString(allArchivedShifts);
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', `archived_shifts_${new Date().toISOString().slice(0,10)}.csv`);
+      a.click();
+    }
+
+    function archiveAndClear() {
+      if (shiftHistory.length === 0) return alert("Shift history is already empty.");
+      const answer = confirm("This will download a full CSV backup and clear your shift history from this device. Proceed?");
+      if (answer) {
+        exportCSV('all');
+        shiftHistory = [];
+        localStorage.removeItem('shiftHistory');
+        updateUI();
+        renderHistory();
+        renderSummary();
+        calculateWeekHours();
+      }
+    }
+
+    document.getElementById('shiftNotes').addEventListener('input', (e) => {
+      if (activeShift) {
+        activeShift.note = e.target.value;
+        localStorage.setItem('activeShift', JSON.stringify(activeShift));
+      }
+    });
+
+    document.getElementById('locationSelect').addEventListener('change', (e) => {
+      if (activeShift) {
+        activeShift.location = e.target.value;
+        localStorage.setItem('activeShift', JSON.stringify(activeShift));
+      }
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'clock_out' && activeShift) {
+      handlePunch();
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    applyTheme();
+    initLocations();
+    checkSundayMidnightArchive();
+    updateUI();
+    renderHistory();
+    renderSummary();
+    if (activeShift) startTimer();
+  </script>
 </body>
 </html>
